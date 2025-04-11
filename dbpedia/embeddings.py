@@ -1,12 +1,8 @@
-# -*- coding: utf-8 -*-
-import numpy as np
-
 from SPARQLWrapper import SPARQLWrapper, JSON
 from traceback import print_exc
 from sys import exit, argv
-from re import fullmatch
 
-from utils.constants import MODEL_PATH
+from utils.constants import SPARQL_RESOURCE_URL, SPARQL_URL
 from utils.utils import get_entity_similarity, is_english_only
     
 
@@ -37,49 +33,6 @@ from utils.utils import get_entity_similarity, is_english_only
 #         print(f"Entity not found: {e}")
 #         return None
 
-def get_most_similar_entities(wiki2vec, entity_title, top_k=10):
-    """
-    Find the most similar entities to a given entity.
-    
-    Args:
-        wiki2vec: Wikipedia2Vec model
-        entity_title (str): Target entity title
-        top_k (int): Number of similar entities to return
-        
-    Returns:
-        list: List of (entity_title, similarity_score) tuples
-    """
-    try:
-        return wiki2vec.most_similar(wiki2vec.get_entity(entity_title), top_k)
-    except KeyError as e:
-        print(f"Entity not found: {e}")
-        return None
-
-def get_word_entity_similarity(wiki2vec, word, entity_title):
-    """
-    Calculate similarity between a word and an entity.
-    
-    Args:
-        wiki2vec: Wikipedia2Vec model
-        word (str): Input word
-        entity_title (str): Entity title
-        
-    Returns:
-        float: Similarity score between 0 and 1
-    """
-    try:
-        word_vec = wiki2vec.get_word_vector(word)
-        entity_vec = wiki2vec.get_entity_vector(entity_title)
-        
-        similarity = np.dot(word_vec, entity_vec) / (
-            np.linalg.norm(word_vec) * np.linalg.norm(entity_vec)
-        )
-        return similarity
-    except KeyError as e:
-        print(f"Word or entity not found: {e}")
-        return None
-
-
 from datetime import datetime
 now = datetime.now()
 current_time = now.strftime("%H:%M:%S")  # Format: HH:MM:SS
@@ -87,7 +40,6 @@ current_time = now.strftime("%H:%M:%S")  # Format: HH:MM:SS
 sstart=0
 # Define the query
 query = "Explain quantum entanglement in simple terms."
-import os
 import anthropic
 
 
@@ -288,7 +240,7 @@ def find_path_between_nodes(start_node, target_node, endpoint):
             si1=si1.replace("_"," ")
             oka=""
             llasta=[]
-            prf = "http://dbpedia.org/resource/"    
+            prf = f"{SPARQL_RESOURCE_URL}"    
                           
             coa=0
             loa=[]
@@ -460,208 +412,207 @@ def find_path_between_nodes(start_node, target_node, endpoint):
                         
     # If queue exhausts without finding target
     return None
-args = argv[1:]  # Exclude script name
-print("Received Arguments:", args)
-# Example usage
-endpoint = "https://yago-knowledge.org/sparql/query"
-endpoint = "http://localhost:8890/sparql"
-endpoint = "https://dbpedia.org/sparql/query"
+if __name__ == "__main__":
+    args = argv[1:]  # Exclude script name
+    print("Received Arguments:", args)
+    # Example usage
+    endpoint = f"{SPARQL_URL}/query"
 
-#start_node = "http://yago-knowledge.org/resource/The_Beatles"
-#target_node = "http://yago-knowledge.org/resource/Heraklion"
-start_node = "http://yago-knowledge.org/resource/Chania"
-start_node = "http://dbpedia.org/resource/Chania"
-start_node = "http://dbpedia.org/resource/Lamia"
-start_node = "http://dbpedia.org/resource/Boris_Yeltsin"
-start_node = "http://dbpedia.org/resource/Heraklion"
-start_node = "http://dbpedia.org/resource/Boris_Yeltsin"
-start_node = "http://dbpedia.org/resource/Morocco"
+    #start_node = "http://yago-knowledge.org/resource/The_Beatles"
+    #target_node = "http://yago-knowledge.org/resource/Heraklion"
+    start_node = "http://yago-knowledge.org/resource/Chania"
+    start_node = f"{SPARQL_RESOURCE_URL}Chania"
+    start_node = f"{SPARQL_RESOURCE_URL}Lamia"
+    start_node = f"{SPARQL_RESOURCE_URL}Boris_Yeltsin"
+    start_node = f"{SPARQL_RESOURCE_URL}Heraklion"
+    start_node = f"{SPARQL_RESOURCE_URL}Boris_Yeltsin"
+    start_node = f"{SPARQL_RESOURCE_URL}Morocco"
 
 
-start_node = "http://dbpedia.org/resource/The_Beatles"
-start_node = "http://dbpedia.org/resource/Vikings"
-start_node = "http://dbpedia.org/resource/Barack_Obama" #to aristotle failure
-start_node = "http://dbpedia.org/resource/The_Beatles"
+    start_node = f"{SPARQL_RESOURCE_URL}The_Beatles"
+    start_node = f"{SPARQL_RESOURCE_URL}Vikings"
+    start_node = f"{SPARQL_RESOURCE_URL}Barack_Obama" #to aristotle failure
+    start_node = f"{SPARQL_RESOURCE_URL}The_Beatles"
 
-start_node="http://dbpedia.org/resource/Albert_Einstein"
-start_node="http://dbpedia.org/resource/Barack_Obama"
-start_node="http://dbpedia.org/resource/Paris"
-start_node="http://dbpedia.org/resource/Apple_Inc."
-start_node="http://dbpedia.org/resource/Mona_Lisa"
-start_node="http://dbpedia.org/resource/Google"
-start_node="http://dbpedia.org/resource/United_States"
-start_node="http://dbpedia.org/resource/World_War_II"
-start_node="http://dbpedia.org/resource/Shakespeare"
-start_node="http://dbpedia.org/resource/Microsoft"
-start_node="http://dbpedia.org/resource/New_York_City"
-start_node="http://dbpedia.org/resource/Leonardo_da_Vinci"
-start_node="http://dbpedia.org/resource/Elon_Musk"
-start_node="http://dbpedia.org/resource/China"
-start_node="http://dbpedia.org/resource/India"
-start_node="http://dbpedia.org/resource/Java_(programming_language)"
-start_node="http://dbpedia.org/resource/Internet"
-start_node="http://dbpedia.org/resource/Artificial_intelligence"
-start_node="http://dbpedia.org/resource/Earth"
-start_node="http://dbpedia.org/resource/Star_Wars"
-start_node="http://dbpedia.org/resource/Apple_Inc."
-start_node="http://dbpedia.org/resource/Microsoft"
-start_node="http://dbpedia.org/resource/Elon_Musk"
-start_node="http://dbpedia.org/resource/Hanoi"
-start_node="http://dbpedia.org/resource/Boris_Yeltsin"
+    start_node=f"{SPARQL_RESOURCE_URL}Albert_Einstein"
+    start_node=f"{SPARQL_RESOURCE_URL}Barack_Obama"
+    start_node=f"{SPARQL_RESOURCE_URL}Paris"
+    start_node=f"{SPARQL_RESOURCE_URL}Apple_Inc."
+    start_node=f"{SPARQL_RESOURCE_URL}Mona_Lisa"
+    start_node=f"{SPARQL_RESOURCE_URL}Google"
+    start_node=f"{SPARQL_RESOURCE_URL}United_States"
+    start_node=f"{SPARQL_RESOURCE_URL}World_War_II"
+    start_node=f"{SPARQL_RESOURCE_URL}Shakespeare"
+    start_node=f"{SPARQL_RESOURCE_URL}Microsoft"
+    start_node=f"{SPARQL_RESOURCE_URL}New_York_City"
+    start_node=f"{SPARQL_RESOURCE_URL}Leonardo_da_Vinci"
+    start_node=f"{SPARQL_RESOURCE_URL}Elon_Musk"
+    start_node=f"{SPARQL_RESOURCE_URL}China"
+    start_node=f"{SPARQL_RESOURCE_URL}India"
+    start_node=f"{SPARQL_RESOURCE_URL}Java_(programming_language)"
+    start_node=f"{SPARQL_RESOURCE_URL}Internet"
+    start_node=f"{SPARQL_RESOURCE_URL}Artificial_intelligence"
+    start_node=f"{SPARQL_RESOURCE_URL}Earth"
+    start_node=f"{SPARQL_RESOURCE_URL}Star_Wars"
+    start_node=f"{SPARQL_RESOURCE_URL}Apple_Inc."
+    start_node=f"{SPARQL_RESOURCE_URL}Microsoft"
+    start_node=f"{SPARQL_RESOURCE_URL}Elon_Musk"
+    start_node=f"{SPARQL_RESOURCE_URL}Hanoi"
+    start_node=f"{SPARQL_RESOURCE_URL}Boris_Yeltsin"
 
-#start_node = "http://dbpedia.org/resource/The_Beatles"
+    #start_node = f"{SPARQL_RESOURCE_URL}The_Beatles"
 
-#start_node = "http://dbpedia.org/resource/California"
-#start_node = "http://dbpedia.org/resource/Adolf_Hitler"
-start_node = "http://dbpedia.org/resource/Lamia"
+    #start_node = f"{SPARQL_RESOURCE_URL}California"
+    #start_node = f"{SPARQL_RESOURCE_URL}Adolf_Hitler"
+    start_node = f"{SPARQL_RESOURCE_URL}Lamia"
 
-target_node = "http://yago-knowledge.org/resource/Heraklion"
-target_node = "http://dbpedia.org/resource/China"
-target_node = "http://dbpedia.org/resource/Nigeria"
-target_node = "http://dbpedia.org/resource/Australia"
-target_node = "http://dbpedia.org/resource/Bavaria"
-target_node = "http://dbpedia.org/The_Flintstones"
-target_node = "http://dbpedia.org/resource/Moscow"
-target_node = "http://dbpedia.org/resource/Montevideo"
-target_node = "http://dbpedia.org/resource/Hawaii"
-target_node = "http://dbpedia.org/resource/Hanoi"
-target_node = "http://dbpedia.org/resource/Heraklion"
-target_node = "http://dbpedia.org/resource/Edessa"
-target_node = "http://dbpedia.org/resource/Pella"
-target_node = "http://dbpedia.org/resource/Aristotle"
-target_node = "http://dbpedia.org/resource/NATO"
-target_node = "http://dbpedia.org/resource/Herne_Bay_High_School"
+    target_node = "http://yago-knowledge.org/resource/Heraklion"
+    target_node = f"{SPARQL_RESOURCE_URL}China"
+    target_node = f"{SPARQL_RESOURCE_URL}Nigeria"
+    target_node = f"{SPARQL_RESOURCE_URL}Australia"
+    target_node = f"{SPARQL_RESOURCE_URL}Bavaria"
+    target_node = "http://dbpedia.org/The_Flintstones"
+    target_node = f"{SPARQL_RESOURCE_URL}Moscow"
+    target_node = f"{SPARQL_RESOURCE_URL}Montevideo"
+    target_node = f"{SPARQL_RESOURCE_URL}Hawaii"
+    target_node = f"{SPARQL_RESOURCE_URL}Hanoi"
+    target_node = f"{SPARQL_RESOURCE_URL}Heraklion"
+    target_node = f"{SPARQL_RESOURCE_URL}Edessa"
+    target_node = f"{SPARQL_RESOURCE_URL}Pella"
+    target_node = f"{SPARQL_RESOURCE_URL}Aristotle"
+    target_node = f"{SPARQL_RESOURCE_URL}NATO"
+    target_node = f"{SPARQL_RESOURCE_URL}Herne_Bay_High_School"
 
-target_node="http://dbpedia.org/resource/Isaac_Newton"
-target_node="http://dbpedia.org/resource/Stephen_Hawking"
-target_node="http://dbpedia.org/resource/Nikola_Tesla"
-target_node="http://dbpedia.org/resource/Vincent_van_Gogh"
-target_node="http://dbpedia.org/resource/Ludwig_van_Beethoven"
-target_node="http://dbpedia.org/resource/Marie_Curie"
-target_node="http://dbpedia.org/resource/Charles_Darwin"
-target_node="http://dbpedia.org/resource/Adolf_Hitler"
-target_node="http://dbpedia.org/resource/Julius_Caesar"
-target_node="http://dbpedia.org/resource/Alexander_the_Great"
-target_node="http://dbpedia.org/resource/Napoleon"
-target_node="http://dbpedia.org/resource/Winston_Churchill"
-target_node="http://dbpedia.org/resource/Martin_Luther_King_Jr."
-target_node="http://dbpedia.org/resource/Mahatma_Gandhi"
-target_node="http://dbpedia.org/resource/Nelson_Mandela"
-target_node="http://dbpedia.org/resource/Plato"
-target_node="http://dbpedia.org/resource/Aristotle"
-target_node="http://dbpedia.org/resource/William_Shakespeare"
-target_node="http://dbpedia.org/resource/Christopher_Columbus"
-target_node="http://dbpedia.org/resource/Java_(programming_language)"
-target_node="http://dbpedia.org/resource/Christopher_Columbus"
+    target_node=f"{SPARQL_RESOURCE_URL}Isaac_Newton"
+    target_node=f"{SPARQL_RESOURCE_URL}Stephen_Hawking"
+    target_node=f"{SPARQL_RESOURCE_URL}Nikola_Tesla"
+    target_node=f"{SPARQL_RESOURCE_URL}Vincent_van_Gogh"
+    target_node=f"{SPARQL_RESOURCE_URL}Ludwig_van_Beethoven"
+    target_node=f"{SPARQL_RESOURCE_URL}Marie_Curie"
+    target_node=f"{SPARQL_RESOURCE_URL}Charles_Darwin"
+    target_node=f"{SPARQL_RESOURCE_URL}Adolf_Hitler"
+    target_node=f"{SPARQL_RESOURCE_URL}Julius_Caesar"
+    target_node=f"{SPARQL_RESOURCE_URL}Alexander_the_Great"
+    target_node=f"{SPARQL_RESOURCE_URL}Napoleon"
+    target_node=f"{SPARQL_RESOURCE_URL}Winston_Churchill"
+    target_node=f"{SPARQL_RESOURCE_URL}Martin_Luther_King_Jr."
+    target_node=f"{SPARQL_RESOURCE_URL}Mahatma_Gandhi"
+    target_node=f"{SPARQL_RESOURCE_URL}Nelson_Mandela"
+    target_node=f"{SPARQL_RESOURCE_URL}Plato"
+    target_node=f"{SPARQL_RESOURCE_URL}Aristotle"
+    target_node=f"{SPARQL_RESOURCE_URL}William_Shakespeare"
+    target_node=f"{SPARQL_RESOURCE_URL}Christopher_Columbus"
+    target_node=f"{SPARQL_RESOURCE_URL}Java_(programming_language)"
+    target_node=f"{SPARQL_RESOURCE_URL}Christopher_Columbus"
 
-target_node="http://dbpedia.org/resource/Nelson_Mandela"
-target_node="http://dbpedia.org/resource/Plato"
-target_node="http://dbpedia.org/resource/Nigeria"
-target_node="http://dbpedia.org/resource/Hawaii"
+    target_node=f"{SPARQL_RESOURCE_URL}Nelson_Mandela"
+    target_node=f"{SPARQL_RESOURCE_URL}Plato"
+    target_node=f"{SPARQL_RESOURCE_URL}Nigeria"
+    target_node=f"{SPARQL_RESOURCE_URL}Hawaii"
 
-#target_node = "http://yago-knowledge.org/resource/John_Lennon"
-#target_node = "http://yago-knowledge.org/resource/Spain"
-target_node = "http://dbpedia.org/resource/Moscow"
-args=['Athens','Moscow']
-start_node="http://dbpedia.org/resource/"+args[0]
-target_node="http://dbpedia.org/resource/"+args[1]
+    #target_node = "http://yago-knowledge.org/resource/John_Lennon"
+    #target_node = "http://yago-knowledge.org/resource/Spain"
+    target_node = f"{SPARQL_RESOURCE_URL}Moscow"
+    args=['Athens','Moscow']
+    start_node=f"{SPARQL_RESOURCE_URL}"+args[0]
+    target_node=f"{SPARQL_RESOURCE_URL}"+args[1]
 
-now = datetime.now()
-current_time = now.strftime("%H:%M:%S")  # Format: HH:MM:SS
-word_entity_sim = get_entity_similarity(args[0], args[1])
-print(f"\nSimilarity between {start_node} and {target_node}: {word_entity_sim}")
-la,path = find_path_between_nodes(start_node, target_node, endpoint)
-print("MANOS")
-if path:
-    for step in path:
-        print(f"{step[0]} --{step[1]}--> {step[2]}")
-    now2 = datetime.now()
-    current_time2 = now2.strftime("%H:%M:%S")
-    print(current_time)
-    print(current_time2)
-    print("KENZA")
-    totalp=0.0
-    totale=0.0
-    now2 = datetime.now()
-    
-    # #file.write(entity1+" ----->  "+first_p_value+" ------> "+first_x_value+'\n')
-    # xa2= first_x_value.rsplit('/', 1)[-1]
-    #
-    # word_entity_similarity = get_entity_similarity(wiki2vec, entity1, xa2)
-    # if word_entity_similarity is None:
-    #     totalp+=0
-    # else:
-    #     totalp+= word_entity_similarity
-    # word_entity_similarity2 = get_entity_similarity(wiki2vec, entity1, entity2)
-    # if word_entity_similarity2 is None:
-    #     totale+=0
-    # else:
-    #     totale+= word_entity_similarity2
-    # print(str(totale))
-    #
-    # print(f"\nSimilarity between {entity1} and {xa2}: {word_entity_similarity}")
-    import time
-    
-    lana=len(path)
-    ida=1
-    for triple in path:
-        print("MENU")
-        print(f"({triple[0]}, {triple[1]}, {triple[2]})")
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")  # Format: HH:MM:SS
+    word_entity_sim = get_entity_similarity(args[0], args[1])
+    print(f"\nSimilarity between {start_node} and {target_node}: {word_entity_sim}")
+    la,path = find_path_between_nodes(start_node, target_node, endpoint)
+    print("MANOS")
+    if path:
+        for step in path:
+            print(f"{step[0]} --{step[1]}--> {step[2]}")
+        now2 = datetime.now()
+        current_time2 = now2.strftime("%H:%M:%S")
+        print(current_time)
+        print(current_time2)
+        print("KENZA")
+        totalp=0.0
+        totale=0.0
+        now2 = datetime.now()
+        
+        # #file.write(entity1+" ----->  "+first_p_value+" ------> "+first_x_value+'\n')
+        # xa2= first_x_value.rsplit('/', 1)[-1]
+        #
+        # word_entity_similarity = get_entity_similarity(wiki2vec, entity1, xa2)
+        # if word_entity_similarity is None:
+        #     totalp+=0
+        # else:
+        #     totalp+= word_entity_similarity
+        # word_entity_similarity2 = get_entity_similarity(wiki2vec, entity1, entity2)
+        # if word_entity_similarity2 is None:
+        #     totale+=0
+        # else:
+        #     totale+= word_entity_similarity2
+        # print(str(totale))
+        #
+        # print(f"\nSimilarity between {entity1} and {xa2}: {word_entity_similarity}")
+        import time
+        
+        lana=len(path)
+        ida=1
+        for triple in path:
+            print("MENU")
+            print(f"({triple[0]}, {triple[1]}, {triple[2]})")
+            #time.sleep(1)
+            xa0= triple[0][0].rsplit('/', 1)[-1]
+            xa2= triple[2][0].rsplit('/', 1)[-1]
+            xa0=xa0.replace("_"," ").replace("-",' ')
+            xa2=xa2.replace("_"," ").replace("-",' ')
+            xa3=args[1]
+            xa3=xa3.replace("_"," ").replace("-",' ')
+            #xa2=xa2.replace("_"," ").replace("-",' ') 
+        
+            word_entity_similarity = get_entity_similarity(xa0, xa2)
+            if word_entity_similarity is None:
+                totalp+=0
+            else:
+                totalp+= word_entity_similarity
+        
+            word_entity_similarity2 = get_entity_similarity(xa0, xa3)
+            if word_entity_similarity2 is None:
+                totale+=0
+            else:
+                totale+= word_entity_similarity2
+            print(f"\nSimilarity between {xa0} and {xa2}: {word_entity_similarity} {word_entity_similarity2} ")
+            ida=ida+1
+            if ida==lana:
+                break
+        
+            #file.write(f"({triple[0]}, {triple[1]}, {triple[2]})\n")
         #time.sleep(1)
-        xa0= triple[0][0].rsplit('/', 1)[-1]
-        xa2= triple[2][0].rsplit('/', 1)[-1]
-        xa0=xa0.replace("_"," ").replace("-",' ')
-        xa2=xa2.replace("_"," ").replace("-",' ')
-        xa3=args[1]
-        xa3=xa3.replace("_"," ").replace("-",' ')
-        #xa2=xa2.replace("_"," ").replace("-",' ') 
-    
-        word_entity_similarity = get_entity_similarity(xa0, xa2)
-        if word_entity_similarity is None:
-            totalp+=0
-        else:
-            totalp+= word_entity_similarity
-    
-        word_entity_similarity2 = get_entity_similarity(xa0, xa3)
-        if word_entity_similarity2 is None:
-            totale+=0
-        else:
-            totale+= word_entity_similarity2
-        print(f"\nSimilarity between {xa0} and {xa2}: {word_entity_similarity} {word_entity_similarity2} ")
-        ida=ida+1
-        if ida==lana:
-            break
-    
-        #file.write(f"({triple[0]}, {triple[1]}, {triple[2]})\n")
-    #time.sleep(1)
-    
-    #file.write(last_x_value+" -----> "+last_p_value+' -----> '+entity2+'\n')
-    # xa0= last_x_value.rsplit('/', 1)[-1]
-    # #xa2= triple[0].rsplit('/', 1)[-1]
-    #
-    # word_entity_similarity = get_entity_similarity(wiki2vec, xa0, entity2)
-    #
-    # if word_entity_similarity is None:
-    #     totalp+=0
-    # else:
-    #     totalp+= word_entity_similarity
-    # #time.sleep(1)
-    #
-    # word_entity_similarity2 = get_entity_similarity(wiki2vec,xa0, entity2)
-    # if word_entity_similarity2 is None:
-    #     totale+=0
-    # else:
-    #     totale+= word_entity_similarity2
-    #print(f"\nSimilarity between {xa0} and {entity2}: {word_entity_similarity}")
-    print("TOTAL P "+str(totalp/(float(la)))+ " TOTAL E "+str(totale/(float(la))))    
-    
-    
-    
-    
-    exit()      # Format: HH:
-else:
-    print("No path found between the nodes.")
-from datetime import datetime
+        
+        #file.write(last_x_value+" -----> "+last_p_value+' -----> '+entity2+'\n')
+        # xa0= last_x_value.rsplit('/', 1)[-1]
+        # #xa2= triple[0].rsplit('/', 1)[-1]
+        #
+        # word_entity_similarity = get_entity_similarity(wiki2vec, xa0, entity2)
+        #
+        # if word_entity_similarity is None:
+        #     totalp+=0
+        # else:
+        #     totalp+= word_entity_similarity
+        # #time.sleep(1)
+        #
+        # word_entity_similarity2 = get_entity_similarity(wiki2vec,xa0, entity2)
+        # if word_entity_similarity2 is None:
+        #     totale+=0
+        # else:
+        #     totale+= word_entity_similarity2
+        #print(f"\nSimilarity between {xa0} and {entity2}: {word_entity_similarity}")
+        print("TOTAL P "+str(totalp/(float(la)))+ " TOTAL E "+str(totale/(float(la))))    
+        
+        
+        
+        
+        exit()      # Format: HH:
+    else:
+        print("No path found between the nodes.")
+    from datetime import datetime
 
-# Print the current date and time
-print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    # Print the current date and time
+    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))

@@ -2,6 +2,7 @@ from SPARQLWrapper import SPARQLWrapper, JSON
 from datetime import datetime
 from sys import argv
 
+from utils.constants import SPARQL_RESOURCE_URL, SPARQL_URL
 from utils.utils import get_entity_similarity
 
 def get_entity_label(entity_id: str):
@@ -101,14 +102,13 @@ def find_path(entity1: str, entity2: str, max_depth: int=15):
     """
     Βρίσκει μονοπάτι μεταξύ δύο οντοτήτων στο DBpedia μέσω SPARQL queries.
     """
-    endpoint= "https://dbpedia.org/sparql"
-    sparql = SPARQLWrapper(endpoint)
+    sparql = SPARQLWrapper(SPARQL_URL)
 
     # Μετατροπή οντοτήτων σε πλήρη URIs εάν δεν έχουν ήδη.
     if not entity1.startswith("http"):
-        entity1 = f"http://dbpedia.org/resource/{entity1}"
+        entity1 = f"{SPARQL_RESOURCE_URL}{entity1}"
     if not entity2.startswith("http"):
-        entity2 = f"http://dbpedia.org/resource/{entity2}"
+        entity2 = f"{SPARQL_RESOURCE_URL}{entity2}"
 
     # Επαναληπτική εκτέλεση queries μέχρι το μέγιστο βάθος
   

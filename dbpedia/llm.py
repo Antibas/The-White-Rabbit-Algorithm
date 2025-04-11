@@ -1,15 +1,11 @@
-# -*- coding: utf-8 -*-
-
-from wikipedia2vec import Wikipedia2Vec
-
 from SPARQLWrapper import SPARQLWrapper, JSON
 from traceback import print_exc
 from sys import exit, argv
-from re import fullmatch
 from datetime import datetime
-import os
-import anthropic
+from json import loads
+from anthropic import Anthropic
 
+from utils.constants import SPARQL_RESOURCE_URL, SPARQL_URL
 from utils.utils import get_entity_similarity, is_english_only
 
 now = datetime.now()
@@ -31,7 +27,7 @@ query = "Explain quantum entanglement in simple terms."
 #     messages=[
 #         #{"role": "system", "content":query},
 #         {"role": "user", "content": query+" " + user_input}])
-client = anthropic.Anthropic()
+client = Anthropic()
 
 #print(message)
 
@@ -39,11 +35,6 @@ client = anthropic.Anthropic()
 # Make the request
 # response = model.generate_content("Write a story about a magic backpack.")
 # print(response.text)
-import json
-
-
-from datetime import datetime
-
 # Print the current date and time
 print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 stra="PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>  PREFIX schema: <http://schema.org/> PREFIX yago: <http://yago-knowledge.org/resource/>"
@@ -85,7 +76,7 @@ def find_path_between_nodes(start_node, target_node, endpoint):
         # #
         # #
         # # re = response2s.choices[0].message.content
-        # client = anthropic.Anthropic()
+        # client = Anthropic()
         # message = client.messages.create(
         #     model="claude-3-5-sonnet-20241022",
         #     max_tokens=1000,
@@ -170,7 +161,7 @@ def find_path_between_nodes(start_node, target_node, endpoint):
             results = sparql.query().convert()
             print("HE")
             if isinstance(results, bytes):  # Decode if necessary
-                results = json.loads(results.decode("utf-8"))
+                results = loads(results.decode("utf-8"))
         except Exception as e:
             print(f"Error querying SPARQL endpoint: {e}")
             print_exc() 
@@ -349,108 +340,11 @@ if __name__ == "__main__":
     args = argv[1:]  # Exclude script name
     print("Received Arguments:", args)
     # Example usage
-    endpoint = "https://yago-knowledge.org/sparql/query"
-    endpoint = "http://localhost:8890/sparql"
-    endpoint = "https://dbpedia.org/sparql/query"
+    endpoint = f"{SPARQL_URL}/query"
 
-    #start_node = "http://yago-knowledge.org/resource/The_Beatles"
-    #target_node = "http://yago-knowledge.org/resource/Heraklion"
-    start_node = "http://yago-knowledge.org/resource/Chania"
-    start_node = "http://dbpedia.org/resource/Chania"
-    start_node = "http://dbpedia.org/resource/Lamia"
-    start_node = "http://dbpedia.org/resource/Boris_Yeltsin"
-    start_node = "http://dbpedia.org/resource/Heraklion"
-    start_node = "http://dbpedia.org/resource/Boris_Yeltsin"
-    start_node = "http://dbpedia.org/resource/Morocco"
-
-
-    start_node = "http://dbpedia.org/resource/The_Beatles"
-    start_node = "http://dbpedia.org/resource/Vikings"
-    start_node = "http://dbpedia.org/resource/Barack_Obama" #to aristotle failure
-    start_node = "http://dbpedia.org/resource/The_Beatles"
-
-    start_node="http://dbpedia.org/resource/Albert_Einstein"
-    start_node="http://dbpedia.org/resource/Barack_Obama"
-    start_node="http://dbpedia.org/resource/Paris"
-    start_node="http://dbpedia.org/resource/Apple_Inc."
-    start_node="http://dbpedia.org/resource/Mona_Lisa"
-    start_node="http://dbpedia.org/resource/Google"
-    start_node="http://dbpedia.org/resource/United_States"
-    start_node="http://dbpedia.org/resource/World_War_II"
-    start_node="http://dbpedia.org/resource/Shakespeare"
-    start_node="http://dbpedia.org/resource/Microsoft"
-    start_node="http://dbpedia.org/resource/New_York_City"
-    start_node="http://dbpedia.org/resource/Leonardo_da_Vinci"
-    start_node="http://dbpedia.org/resource/Elon_Musk"
-    start_node="http://dbpedia.org/resource/China"
-    start_node="http://dbpedia.org/resource/India"
-    start_node="http://dbpedia.org/resource/Java_(programming_language)"
-    start_node="http://dbpedia.org/resource/Internet"
-    start_node="http://dbpedia.org/resource/Artificial_intelligence"
-    start_node="http://dbpedia.org/resource/Earth"
-    start_node="http://dbpedia.org/resource/Star_Wars"
-    start_node="http://dbpedia.org/resource/Apple_Inc."
-    start_node="http://dbpedia.org/resource/Microsoft"
-    start_node="http://dbpedia.org/resource/Elon_Musk"
-    start_node="http://dbpedia.org/resource/Hanoi"
-    start_node="http://dbpedia.org/resource/Boris_Yeltsin"
-
-    #start_node = "http://dbpedia.org/resource/The_Beatles"
-
-    #start_node = "http://dbpedia.org/resource/California"
-    #start_node = "http://dbpedia.org/resource/Adolf_Hitler"
-    start_node = "http://dbpedia.org/resource/Lamia"
-
-    target_node = "http://yago-knowledge.org/resource/Heraklion"
-    target_node = "http://dbpedia.org/resource/China"
-    target_node = "http://dbpedia.org/resource/Nigeria"
-    target_node = "http://dbpedia.org/resource/Australia"
-    target_node = "http://dbpedia.org/resource/Bavaria"
-    target_node = "http://dbpedia.org/The_Flintstones"
-    target_node = "http://dbpedia.org/resource/Moscow"
-    target_node = "http://dbpedia.org/resource/Montevideo"
-    target_node = "http://dbpedia.org/resource/Hawaii"
-    target_node = "http://dbpedia.org/resource/Hanoi"
-    target_node = "http://dbpedia.org/resource/Heraklion"
-    target_node = "http://dbpedia.org/resource/Edessa"
-    target_node = "http://dbpedia.org/resource/Pella"
-    target_node = "http://dbpedia.org/resource/Aristotle"
-    target_node = "http://dbpedia.org/resource/NATO"
-    target_node = "http://dbpedia.org/resource/Herne_Bay_High_School"
-
-    target_node="http://dbpedia.org/resource/Isaac_Newton"
-    target_node="http://dbpedia.org/resource/Stephen_Hawking"
-    target_node="http://dbpedia.org/resource/Nikola_Tesla"
-    target_node="http://dbpedia.org/resource/Vincent_van_Gogh"
-    target_node="http://dbpedia.org/resource/Ludwig_van_Beethoven"
-    target_node="http://dbpedia.org/resource/Marie_Curie"
-    target_node="http://dbpedia.org/resource/Charles_Darwin"
-    target_node="http://dbpedia.org/resource/Adolf_Hitler"
-    target_node="http://dbpedia.org/resource/Julius_Caesar"
-    target_node="http://dbpedia.org/resource/Alexander_the_Great"
-    target_node="http://dbpedia.org/resource/Napoleon"
-    target_node="http://dbpedia.org/resource/Winston_Churchill"
-    target_node="http://dbpedia.org/resource/Martin_Luther_King_Jr."
-    target_node="http://dbpedia.org/resource/Mahatma_Gandhi"
-    target_node="http://dbpedia.org/resource/Nelson_Mandela"
-    target_node="http://dbpedia.org/resource/Plato"
-    target_node="http://dbpedia.org/resource/Aristotle"
-    target_node="http://dbpedia.org/resource/William_Shakespeare"
-    target_node="http://dbpedia.org/resource/Christopher_Columbus"
-    target_node="http://dbpedia.org/resource/Java_(programming_language)"
-    target_node="http://dbpedia.org/resource/Christopher_Columbus"
-
-    target_node="http://dbpedia.org/resource/Nelson_Mandela"
-    target_node="http://dbpedia.org/resource/Plato"
-    target_node="http://dbpedia.org/resource/Nigeria"
-    target_node="http://dbpedia.org/resource/Hawaii"
-
-    #target_node = "http://yago-knowledge.org/resource/John_Lennon"
-    #target_node = "http://yago-knowledge.org/resource/Spain"
-    target_node = "http://dbpedia.org/resource/Moscow"
     args=['Athens','Moscow']
-    start_node="http://dbpedia.org/resource/"+args[0]
-    target_node="http://dbpedia.org/resource/"+args[1]
+    start_node=f"{SPARQL_RESOURCE_URL}{args[0]}"
+    target_node=f"{SPARQL_RESOURCE_URL}{args[1]}"
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")  # Format: HH:MM:SS
     la,path = find_path_between_nodes(start_node, target_node, endpoint)
