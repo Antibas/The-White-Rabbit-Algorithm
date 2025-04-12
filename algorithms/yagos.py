@@ -91,7 +91,7 @@ def join(entity1: str, entity2: str):
     LOGGER.info(f"\nSimilarity between {xa0} and {entity2}: {word_entity_similarity}")
     nn = totalp/(float(depth))
     nt = totale/(float(depth))
-    return now2-now, depth, nn, nt
+    return round(now2-now), depth, round(nn, 2), round(nt, 2)
 
 def embedding(entity1: str, entity2: str):
     start_node=f"{YAGOS_RESOURCE_URL}/{entity1}"
@@ -138,7 +138,7 @@ def embedding(entity1: str, entity2: str):
             break
     nn = totalp/(float(depth))
     nt = totale/(float(depth))
-    return now2-now, depth, nn, nt
+    return round(now2-now), depth, round(nn, 2), round(nt, 2)
 
 def llm(entity1: str, entity2: str):
     start_node=f"{YAGOS_RESOURCE_URL}/{entity1}"
@@ -184,4 +184,4 @@ def llm(entity1: str, entity2: str):
             break
     nn = totalp/(float(depth))
     nt = totale/(float(depth))
-    return now2-now, depth, nn, nt
+    return round(now2-now), depth, round(nn, 2), round(nt, 2)

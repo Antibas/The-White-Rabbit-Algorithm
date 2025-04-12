@@ -89,7 +89,7 @@ def join(entity1: str, entity2: str):
     LOGGER.info(f"\nSimilarity between {xa3} and {xa4}: {word_entity_similarity}   {word_entity_similarity2}")
     nn = totalp/(float(depth))
     nt = totale/(float(depth))
-    return now2-now, depth, nn, nt
+    return round(now2-now), depth, round(nn, 2), round(nt, 2)
 
 def embedding(entity1: str, entity2: str):
     now = time()
@@ -136,7 +136,7 @@ def embedding(entity1: str, entity2: str):
             break
     nn = totalp/(float(depth))
     nt = totale/(float(depth))
-    return now2-now, depth, nn, nt
+    return round(now2-now), depth, round(nn, 2), round(nt, 2)
 
 def llm(entity1: str, entity2: str):
     now = time()
@@ -183,4 +183,4 @@ def llm(entity1: str, entity2: str):
             break
     nn = totalp/(float(depth))
     nt = totale/(float(depth))
-    return now2-now, depth, nn, nt
+    return round(now2-now), depth, round(nn, 2), round(nt, 2)
