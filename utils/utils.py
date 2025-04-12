@@ -4,24 +4,24 @@ from traceback import print_exc
 from SPARQLWrapper import JSON, SPARQLWrapper
 from anthropic import Anthropic
 import numpy as np
-from utils.constants import AGENT, SPARQL_PREFIX, SPARQL_RESOURCE_URL, SPARQL_URL, WIKI2VEC
+from utils.constants import AGENT, SPARQL_PREFIX, RESOURCE_URLS, BASE_URLS, WIKI2VEC
+from utils.enums import ResourceType
 
-def find_path(entity1: str, entity2: str, max_depth: int=15, agent: bool=False):
+def find_path(entity1: str, entity2: str, max_depth: int=15, agent: bool=False, resource_type: ResourceType=ResourceType.DBPEDIA):#, wikidata: bool=False):
     """
     Βρίσκει μονοπάτι μεταξύ δύο οντοτήτων στο DBpedia μέσω SPARQL queries.
     """
-    sparql = SPARQLWrapper(SPARQL_URL, agent=AGENT) if agent else SPARQLWrapper(SPARQL_URL)
-
+    sparql = SPARQLWrapper(BASE_URLS[resource_type], agent=AGENT) if agent else SPARQLWrapper(BASE_URLS[resource_type])
     # Μετατροπή οντοτήτων σε πλήρη URIs εάν δεν έχουν ήδη.
     if not entity1.startswith("http"):
-        entity1 = f"{SPARQL_RESOURCE_URL}{entity1}"
+        entity1 = f"{RESOURCE_URLS[resource_type]}/{entity1}"
     if not entity2.startswith("http"):
-        entity2 = f"{SPARQL_RESOURCE_URL}{entity2}"
+        entity2 = f"{RESOURCE_URLS[resource_type]}/{entity2}"
 
     # Επαναληπτική εκτέλεση queries μέχρι το μέγιστο βάθος
     for depth in range(1, max_depth + 1):
         print(f"Executing query with depth {depth}...")
-        query = construct_query(entity1, entity2, depth)
+        query = construct_query(entity1, entity2, depth,(resource_type == ResourceType.WIKIDATA))
 
         results = execute_query(sparql, query)
 
@@ -46,7 +46,7 @@ def execute_query(sparql: SPARQLWrapper, query: str):
         print(f"Error executing query: {e}")
         return None
 
-def construct_query(entity1: str, entity2: str, depth: int, wikidata: bool=False):
+def construct_query(entity1: str, entity2: str, depth: int, wikidata: bool):
     """
     Δημιουργεί ένα SPARQL query για την εύρεση μονοπατιού μεταξύ δύο οντοτήτων.
     Εξαιρεί τριπλέτες με predicate `http://dbpedia.org/ontology/wikiPageWikiLink`.
@@ -77,10 +77,12 @@ def construct_query(entity1: str, entity2: str, depth: int, wikidata: bool=False
         query += f"FILTER (?p{depth} != <http://dbpedia.org/ontology/wikiPageWikiLink>)\n"
 
     query += "} limit 1"
+    print(query)
     return query
 
-def get_entity_label(entity_id: str):
-    sparql = SPARQLWrapper("https://query.wikidata.org/sparql")
+def get_entity_label(entity_id: str, agent: bool=False, resource_type: ResourceType=ResourceType.DBPEDIA):
+    sparql = SPARQLWrapper(BASE_URLS[resource_type], agent=AGENT) if agent else SPARQLWrapper(BASE_URLS[resource_type])
+
     
     query = f"""
     SELECT ?item ?itemLabel WHERE {{
@@ -168,7 +170,7 @@ def get_word_entity_similarity(word, entity_title):
 def is_english_only(s):
     return bool(fullmatch(r"[A-Za-z0-9 /\-()_:/.]+", s))
 
-def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, llm: bool=False):
+def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, llm: bool=False, resource_type: ResourceType=ResourceType.DBPEDIA):
     sparql = SPARQLWrapper(endpoint)
     visited = set()
     # Track visited nodes
@@ -205,7 +207,7 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
             path=path + [(current_node, "reached", target_node)]
             for step in path:
                 print(f"{step[0]} --{step[1]}--> {step[2]}")
-            return ilen,path
+            return ilen, path
 
         # Query outgoing links from the current node
         
@@ -247,7 +249,6 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
                     lista.append(next_node)
                     lista2.append(predicate+" "+next_node)
                     
-        aa=queue[0]
         print(str(lista))
         
         if lista.__len__()>1:
@@ -286,7 +287,7 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
                 si1=si.rsplit('/', 1)[-1]
                 si1=si1.replace("_"," ")
                 oka=""
-                prf = f"{SPARQL_RESOURCE_URL}"    
+                prf = f"{RESOURCE_URLS[resource_type]}/"    
                           
                 loa=[]
                 for l in lista:
@@ -346,7 +347,7 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
                             while True:
                                 if i>=queue.__len__():
                                     break
-                                a,b=queue[i]
+                                a,_=queue[i]
                                 try:
                                     if  float(a[1])<float(sco[1]):
                                             position=i
@@ -369,4 +370,4 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
                         print_exc() 
                         
     # If queue exhausts without finding target
-    return None
+    return 0, []

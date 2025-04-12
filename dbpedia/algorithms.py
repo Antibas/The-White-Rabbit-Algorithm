@@ -1,15 +1,14 @@
 from time import time
 
-from utils.constants import SPARQL_RESOURCE_URL, SPARQL_URL
+from utils.constants import DBPEDIA_RESOURCE_URL, DBPEDIA_URL
 from utils.utils import find_path, find_path_between_nodes, get_entity_similarity
 
 def join(entity1: str, entity2: str):
     now = time()
     depth, results = find_path(entity1, entity2)
     if not results:
-        return
-    
-    triples = []
+        return time()-now, 0, 0, 0
+    triples: list[tuple[str, str, str]] = []
     data=results
     
     # Find the first 'x' key (e.g., x1)
@@ -92,15 +91,16 @@ def join(entity1: str, entity2: str):
     return now2-now, depth, nn, nt
 
 def embedding(entity1: str, entity2: str):
-    start_node=f"{SPARQL_RESOURCE_URL}{entity1}"
-    target_node=f"{SPARQL_RESOURCE_URL}{entity2}"
+    start_node=f"{DBPEDIA_RESOURCE_URL}/{entity1}"
+    target_node=f"{DBPEDIA_RESOURCE_URL}/{entity2}"
     now = time()
     word_entity_sim = get_entity_similarity(entity1, entity2)
     
     print(f"\nSimilarity between {start_node} and {target_node}: {word_entity_sim}")
-    depth,path = find_path_between_nodes(start_node, target_node, f"{SPARQL_URL}/query")
+    depth,path = find_path_between_nodes(start_node, target_node, f"{DBPEDIA_URL}/query")
     if not path:
-        return
+        return time()-now, 0, 0, 0
+    
     for step in path:
         print(f"{step[0]} --{step[1]}--> {step[2]}")
     totalp=0.0
@@ -138,15 +138,15 @@ def embedding(entity1: str, entity2: str):
     return now2-now, depth, nn, nt
 
 def llm(entity1: str, entity2: str):
-    start_node=f"{SPARQL_RESOURCE_URL}{entity1}"
-    target_node=f"{SPARQL_RESOURCE_URL}{entity2}"
+    start_node=f"{DBPEDIA_RESOURCE_URL}/{entity1}"
+    target_node=f"{DBPEDIA_RESOURCE_URL}/{entity2}"
     now = time()
     word_entity_sim = get_entity_similarity(entity1, entity2)
     
     print(f"\nSimilarity between {start_node} and {target_node}: {word_entity_sim}")
-    depth,path = find_path_between_nodes(start_node, target_node, f"{SPARQL_URL}/query", llm=True)
+    depth,path = find_path_between_nodes(start_node, target_node, f"{DBPEDIA_URL}/query", llm=True)
     if not path:
-        return
+        return time()-now, 0, 0, 0
     for step in path:
         print(f"{step[0]} --{step[1]}--> {step[2]}")
     totalp=0.0
