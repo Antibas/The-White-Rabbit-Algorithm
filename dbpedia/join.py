@@ -1,7 +1,5 @@
 from SPARQLWrapper import SPARQLWrapper, JSON
-from datetime import datetime
 from time import time
-from sys import argv
 
 from utils.constants import SPARQL_RESOURCE_URL, SPARQL_URL
 from utils.utils import get_entity_similarity
@@ -26,32 +24,6 @@ def get_entity_label(entity_id: str):
         return label
     
     return None
-
-# def get_entity_similarity(wiki2vec: Wikipedia2Vec, entity1: str, entity2: str):
-#     """
-#     Calculate similarity between two Wikipedia entities.
-    
-#     Args:
-#         wiki2vec: Wikipedia2Vec model
-#         entity1 (str): First entity title
-#         entity2 (str): Second entity title
-        
-#     Returns:
-#         float: Similarity score between 0 and 1
-#     """
-#     try:
-#         # Get entity embeddings
-#         entity1_vec = wiki2vec.get_entity_vector(entity1)
-#         entity2_vec = wiki2vec.get_entity_vector(entity2)
-        
-#         # Calculate cosine similarity
-#         similarity = np.dot(entity1_vec, entity2_vec) / (
-#         np.linalg.norm(entity1_vec) * np.linalg.norm(entity2_vec)
-#         )
-#         return similarity
-#     except KeyError as e:
-#         print(f"Entity not found: {e}")
-#         return None
 
 def execute_query(sparql: SPARQLWrapper, query: str):
     """
@@ -96,7 +68,6 @@ def construct_query(entity1: str, entity2: str, depth: int):
         query += f"FILTER (?p{depth-1} != <http://dbpedia.org/ontology/wikiPageWikiLink>)\n"
 
     query += "} limit 1"
-    print("PO "+query)
     return query
 
 def find_path(entity1: str, entity2: str, max_depth: int=15):
@@ -112,8 +83,6 @@ def find_path(entity1: str, entity2: str, max_depth: int=15):
         entity2 = f"{SPARQL_RESOURCE_URL}{entity2}"
 
     # Επαναληπτική εκτέλεση queries μέχρι το μέγιστο βάθος
-  
-
     for depth in range(1, max_depth + 1):
         print(f"Executing query with depth {depth}...")
         query = construct_query(entity1, entity2, depth)
@@ -121,9 +90,7 @@ def find_path(entity1: str, entity2: str, max_depth: int=15):
         results = execute_query(sparql, query)
 
         if results and results["results"]["bindings"]:
-
             print(f"Path found at depth {depth}!")
-         
             return depth, results["results"]["bindings"]
 
     print("No path found within the given depth.")
@@ -135,13 +102,8 @@ def join(entity1: str, entity2: str):
     if not results:
         return
     
-    # print(f"Paths found: {results}")
     triples = []
     data=results
-    # first_p_key = next(key for key in data[0].keys() if key.startswith('p'))
-
-    # Find the last 'p' key (e.g., p5, p10, etc.)
-    # last_p_key = next(key for key in reversed(data[0].keys()) if key.startswith('p'))
     
     # Find the first 'x' key (e.g., x1)
     first_x_key = next(key for key in data[0].keys() if key.startswith('x'))
@@ -150,8 +112,6 @@ def join(entity1: str, entity2: str):
     last_x_key = next(key for key in reversed(data[0].keys()) if key.startswith('x'))
     
     # Extract the corresponding values for first and last 'p' and 'x' keys
-    # first_p_value = data[0][first_p_key]['value']
-    # last_p_value = data[0][last_p_key]['value']
     first_x_value = data[0][first_x_key]['value']
     last_x_value = data[0][last_x_key]['value']
     for entry in data:
@@ -186,12 +146,10 @@ def join(entity1: str, entity2: str):
         totale+=0
     else:
         totale+= word_entity_similarity2
-    # print(str(totale))
 
     print(f"\nSimilarity between {entity1} and {xa2}: {word_entity_similarity}")
     for triple in triples:
         print(f"({triple[0]}, {triple[1]}, {triple[2]})")
-        #time.sleep(1)
         xa0= triple[0].rsplit('/', 1)[-1].replace("_"," ").replace("-"," ")
         xa2= triple[2].rsplit('/', 1)[-1].replace("_"," ").replace("-"," ")
 
@@ -208,19 +166,13 @@ def join(entity1: str, entity2: str):
             totale+= word_entity_similarity2
         print(f"\nSimilarity between {xa0} and {xa2}: {word_entity_similarity}")
 
-    #time.sleep(1)
-
     xa0= last_x_value.rsplit('/', 1)[-1].replace("_"," ").replace("-"," ")
-    #xa2= triple[0].rsplit('/', 1)[-1]
-    # xa4= entity2.rsplit('/', 1)[-1].replace("_"," ").replace("-"," ")
-
     word_entity_similarity = get_entity_similarity(xa0, entity2)
 
     if word_entity_similarity is None:
         totalp+=0
     else:
         totalp+= word_entity_similarity
-    #time.sleep(1)
 
     word_entity_similarity2 = get_entity_similarity(xa0, entity2)
     if word_entity_similarity2 is None:
@@ -228,9 +180,6 @@ def join(entity1: str, entity2: str):
     else:
         totale+= word_entity_similarity2
     print(f"\nSimilarity between {xa0} and {entity2}: {word_entity_similarity}")
-    # print("TOTAL P "+str(totalp/(float(d)))+ " TOTAL E "+str(totale/(float(d))))
     nn = totalp/(float(depth))
     nt = totale/(float(depth))
-    # print(current_time)
-    # print(current_time2)
     return now2-now, depth, nn, nt
