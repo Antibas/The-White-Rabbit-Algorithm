@@ -390,7 +390,7 @@ def get_wikidata_uri(label: str):
         return results["results"]["bindings"][0]["item"]["value"]
     return None
 
-def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str):
+def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, llm: bool=False):
     sparql = SPARQLWrapper(WIKIDATA_URL,agent=AGENT)
     visited = set()
     dicta11={}
@@ -399,9 +399,7 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str):
     dicta22[start_node_raw]=start_node_raw
     start_node=get_wikidata_uri(start_node_raw)
     target_node=get_wikidata_uri(target_node_raw)
-      # Track visited nodes
     sstart=0
-    #startnode[0]=start_node    
     queue = [([start_node,0.0], []),([start_node,0.0], [])]  # Queue of (current_node, path_so_far)
 
     
@@ -416,7 +414,6 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str):
         
         result2 = current_node[0].split("resource/")[-1]
      
-
         if current_node[0] in visited:
             continue
         print(" ---------------> "+current_node[0])
@@ -427,7 +424,7 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str):
             ilen=ilen+1
 
         # Check if we reached the target node
-        if current_node[0] == target_node or result2 in target_node:
+        if current_node[0] == target_node or (not llm and result2 in target_node):
             print(path)
             path=path + [(current_node, "reached", target_node)]
             
@@ -482,6 +479,8 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str):
         lista=[]
         lista2=[]
         dicta={}
+        dictar={}
+        rlista=[]
         dicta11[current_node[0]]=start_node_raw
         dicta11[target_node]=target_node_raw
         # Process each outgoing link and add it to the queue if not visited
@@ -492,13 +491,14 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str):
                 lab = result['label']["value"]
                 lab2 = result['pdesc']["value"]
                 dicta33[predicate]=lab2
+                dictar[lab]=next_node
                 dicta22[next_node]=lab
                 dicta[next_node]=predicate
          
                 # Append to the path and add to the queue
                 
                 if is_english_only(next_node) and next_node not in visited  and 'Category' not in next_node and 'Template' not in next_node:
-
+                    rlista.append(dicta22[next_node])
                     lista.append(next_node)
                     lista2.append(predicate+" "+next_node)
             
@@ -513,49 +513,74 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str):
             if toyl>6 and toyl<=12:
                 epel=11
             elif toyl>12:
-                epel=toyl-1
+                epel=toyl-1 if llm else 11
             else:
                 epel=toyl-1
-            si=target_node
-            si1=si.rsplit('/', 1)[-1]
-            si1=si1.replace("_"," ")
-            si1=target_node_raw
-            oka=""
-            prf=""           
-            loa=[]
-            for l in lista:
-                last_part=l
-                last_part2=dicta22[l]
-                word_entity_sim = get_entity_similarity(si1, last_part2)
-                print(f"\nSimilarity between {si1} and {last_part2}: {word_entity_sim}")
-                if word_entity_sim is not None:
-                    oka=oka+prf+last_part+","+str(word_entity_sim)+"#"
-                    lss=[prf+last_part,float(word_entity_sim)]
-                    print(lss)
-                    loa.append(lss)
-                    
-            print(loa)
-         
-            oka=''
-            apa=0
-            # Sort in descending order based on the second element (similarity score)
-            sorted_data = sorted(loa, key=lambda x: x[1], reverse=True)
-            
-            # Print sorted list
-            for item in sorted_data:
-                print(item)
-                a1=item[0]
-                a2=item[1]
-                oka=oka+a1+","+str(a2)+"#"
-                if apa==epel:
-                    break
-                apa=apa+1
 
-            oka=oka.rstrip()
-            response=oka
+            if llm:
+                stringas=" do not insert δικους σου nodes αλλα επελεξε ακριβως "+str(epel)+" αν ειναι διαθεσιμoi απο την "+str(lista)+" αυτους που πλησιαζουν πιο πολυ  α΄΄΄΄λλα και αλλους που θα μπορουσαν πιο πιθανα να οδηγησουν στον κομβο  "+target_node+" επελεξε συνολικα +"+str(epel)+"και δωσε τους ενα σκορ εγγυτητας με τρια δεκαδικα. εαν δεν πλησιαζει πολυ δωσε σκορ κατω απο 0.4. Αν πλησιζει πολυ δωσε πανω απο 0.7. Επελεξε τους κομβους με τα μεγαλυτερα σκορ. Επισης μην επιλεξεις nodes που αναφερονται σε γενικες κατηγοριες αλλα μονο σε υπαρκτα entities. Return them  as string of entities. An entity is node comma score. Score is from 0.0 for irrelevant to target to 1 .if the node includes the word of the target, return as a score 1.0 .Do not comment scores.If target node is exacly found in list give it score 500.0. Final string is entity#entity#entity etc mean seperate entities with without headers # Return plain string.Αν δεν ειναι διαθεσιμοι 6 κομβοι δεν πειραζει και ΜΗΝ ΔΗΜΙΟΥΡΓΗΣΕΙΣ ΚΟΜΒΟΥΣ ΑΠΟ ΤΗΝ ΔΙΚΗ ΣΟΥ ΓΝΩΣΗ που δεν υπαρχουν στην λιστα. ΑΚΟΜΑ ΚΑΙ ΕΝΑΣ ΝΑ ΕΙΝΑΙ Ο ΚΟΜΒΟΣ ΕΠΕΣΤΡΕΨΕ ΤΟΝ"
+                message = Anthropic().messages.create(
+                model="claude-3-5-sonnet-20241022",
+                max_tokens=1000,
+                temperature=0,
+                system="You are a DBPEDIA SPECIALIST",
+                messages=[
+                        {
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": stringas
+                                }
+                            ]
+                        }
+                    ]
+                )
+                response=message.content[0].text
+            else:
+                si=target_node
+                si1=si.rsplit('/', 1)[-1]
+                si1=si1.replace("_"," ")
+                si1=target_node_raw
+                oka=""
+                prf=""           
+                loa=[]
+                for l in lista:
+                    last_part=l
+                    last_part2=dicta22[l]
+                    word_entity_sim = get_entity_similarity(si1, last_part2)
+                    print(f"\nSimilarity between {si1} and {last_part2}: {word_entity_sim}")
+                    if word_entity_sim is not None:
+                        oka=oka+prf+last_part+","+str(word_entity_sim)+"#"
+                        lss=[prf+last_part,float(word_entity_sim)]
+                        print(lss)
+                        loa.append(lss)
+                        
+                print(loa)
+            
+                oka=''
+                apa=0
+                # Sort in descending order based on the second element (similarity score)
+                sorted_data = sorted(loa, key=lambda x: x[1], reverse=True)
+                
+                # Print sorted list
+                for item in sorted_data:
+                    print(item)
+                    a1=item[0]
+                    a2=item[1]
+                    oka=oka+a1+","+str(a2)+"#"
+                    if apa==epel:
+                        break
+                    apa=apa+1
+
+                oka=oka.rstrip()
+                response=oka
             ra=response
             ra=ra.replace('\n','')
-    
+
+            if llm:
+                for ll in rlista:
+                    ra=ra.replace(ll,dictar[ll])
             
             tups=ra.split('#')
             
@@ -582,7 +607,7 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str):
                             while True:
                                 if i>=queue.__len__():
                                     break
-                                a,b=queue[i]
+                                a,_=queue[i]
                                 try:
                                     if  float(a[1])<float(sco[1]):
                                             position=i

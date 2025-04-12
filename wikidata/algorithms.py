@@ -139,4 +139,48 @@ def embedding(entity1: str, entity2: str):
     return now2-now, depth, nn, nt
 
 def llm(entity1: str, entity2: str):
-    pass
+    now = time()
+    # start_node=get_wikidata_uri(entity1)
+    # target_node=get_wikidata_uri(entity2)
+
+    word_entity_sim = get_entity_similarity(entity1, entity2)
+    print(f"\nSimilarity between {entity1} and {entity2}: {word_entity_sim}")
+    depth,path = find_path_between_nodes_emb_wiki(entity1, entity2, llm=True)#, resource_type=ResourceType.WIKIDATA, agent=True, emb=True)
+    if not path:
+        return time()-now, 0, 0, 0
+    
+    totalp=0
+    totale=0
+    now2 = time()
+    lana=len(path)
+    ida=1
+    for triple in path:
+        print(f"({triple[0]}, {triple[1]}, {triple[2]})")
+        xa0= triple[0][0].rsplit('/', 1)[-1]
+        xa2= triple[2][0].rsplit('/', 1)[-1]
+        xa0=get_entity_label(triple[0][0], agent=True, resource_type=ResourceType.WIKIDATA)
+        xa2=get_entity_label(triple[2][0], agent=True, resource_type=ResourceType.WIKIDATA)
+        
+        xa0=xa0.replace("_"," ").replace("-",' ')
+        xa2=xa2.replace("_"," ").replace("-",' ')
+        xa3=entity2
+        xa3=xa3.replace("_"," ").replace("-",' ')
+    
+        word_entity_similarity = get_entity_similarity(xa0, xa2)
+        if word_entity_similarity is None:
+            totalp+=0
+        else:
+            totalp+= word_entity_similarity
+    
+        word_entity_similarity2 = get_entity_similarity(xa0, xa3)
+        if word_entity_similarity2 is None:
+            totale+=0
+        else:
+            totale+= word_entity_similarity2
+        print(f"\nSimilarity between {xa0} and {xa2}: {word_entity_similarity} {word_entity_similarity2} ")
+        ida=ida+1
+        if ida==lana:
+            break
+    nn = totalp/(float(depth))
+    nt = totale/(float(depth))
+    return now2-now, depth, nn, nt
