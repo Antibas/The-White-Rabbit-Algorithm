@@ -175,3 +175,4 @@ cython_debug/
 *.pkl
 *.bz2
 *.crdownload
+test.py
