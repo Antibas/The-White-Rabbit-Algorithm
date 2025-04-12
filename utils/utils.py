@@ -170,8 +170,8 @@ def get_word_entity_similarity(word, entity_title):
 def is_english_only(s):
     return bool(fullmatch(r"[A-Za-z0-9 /\-()_:/.]+", s))
 
-def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, llm: bool=False, resource_type: ResourceType=ResourceType.DBPEDIA):
-    sparql = SPARQLWrapper(endpoint)
+def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, llm: bool=False, emb: bool=False, agent: bool=False, resource_type: ResourceType=ResourceType.DBPEDIA):
+    sparql = SPARQLWrapper(endpoint, agent=AGENT) if agent else SPARQLWrapper(endpoint)
     visited = set()
     # Track visited nodes
     sstart=0
@@ -217,10 +217,10 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
                ?next_node rdfs:label ?label .
                                FILTER (?predicate != <http://dbpedia.org/ontology/wikiPageWikiLink>)
 
-               FILTER (lang(?label) = "en").
-              
-         }}
-        """
+                FILTER (lang(?label) = "en").
+                
+            }}
+            """
         sparql.setQuery(stoa)
         print(stoa)
         
