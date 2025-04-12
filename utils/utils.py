@@ -3,6 +3,7 @@ from SPARQLWrapper import JSON, SPARQLWrapper
 import numpy as np
 from utils.constants import AGENT, BASE_URLS, WIKI2VEC, WIKIDATA_URL
 from utils.enums import ResourceType
+from utils.logger import LOGGER
 
 def execute_query(sparql: SPARQLWrapper, query: str):
     """
@@ -15,7 +16,7 @@ def execute_query(sparql: SPARQLWrapper, query: str):
         results = sparql.query().convert()
         return results
     except Exception as e:
-        print(f"Error executing query: {e}")
+        LOGGER.exception(f"Error executing query: {e}")
         return None
 
 def construct_query(entity1: str, entity2: str, depth: int, wikidata: bool):
@@ -49,7 +50,7 @@ def construct_query(entity1: str, entity2: str, depth: int, wikidata: bool):
         query += f"FILTER (?p{depth} != <http://dbpedia.org/ontology/wikiPageWikiLink>)\n"
 
     query += "} limit 1"
-    print(query)
+    LOGGER.debug(query)
     return query
 
 def get_entity_label(entity_id: str, agent: bool=False, resource_type: ResourceType=ResourceType.DBPEDIA):
@@ -96,7 +97,7 @@ def get_entity_similarity(entity1: str, entity2: str):
         )
         return similarity
     except KeyError as e:
-        print(f"Entity not found: {e}")
+        LOGGER.exception(f"Entity not found: {e}")
         return None
 
 def get_most_similar_entities(entity_title, top_k=10):
@@ -113,7 +114,7 @@ def get_most_similar_entities(entity_title, top_k=10):
     try:
         return WIKI2VEC.most_similar(WIKI2VEC.get_entity(entity_title), top_k)
     except KeyError as e:
-        print(f"Entity not found: {e}")
+        LOGGER.exception(f"Entity not found: {e}")
         return None
 
 def get_word_entity_similarity(word, entity_title):
@@ -136,7 +137,7 @@ def get_word_entity_similarity(word, entity_title):
         )
         return similarity
     except KeyError as e:
-        print(f"Word or entity not found: {e}")
+        LOGGER.exception(f"Word or entity not found: {e}")
         return None
 
 def is_english_only(s):

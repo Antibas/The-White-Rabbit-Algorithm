@@ -5,6 +5,7 @@ from anthropic import Anthropic
 
 from utils.constants import AGENT, BASE_URLS, RESOURCE_URLS, SPARQL_PREFIX, WIKIDATA_URL
 from utils.enums import ResourceType
+from utils.logger import LOGGER
 from utils.utils import construct_query, execute_query, get_entity_similarity, is_english_only
 
 
@@ -21,19 +22,19 @@ def find_path(entity1: str, entity2: str, max_depth: int=15, agent: bool=False, 
 
     # Επαναληπτική εκτέλεση queries μέχρι το μέγιστο βάθος
     for depth in range(1, max_depth + 1):
-        print(f"Executing query with depth {depth}...")
+        LOGGER.info(f"Executing query with depth {depth}...")
         query = construct_query(entity1, entity2, depth,(resource_type == ResourceType.WIKIDATA))
 
         results = execute_query(sparql, query)
 
         if results and results["results"]["bindings"]:
-            print(f"Path found at depth {depth}!")
+            LOGGER.info(f"Path found at depth {depth}!")
             return depth, results["results"]["bindings"]
 
-    print("No path found within the given depth.")
+    LOGGER.error("No path found within the given depth.")
     return None, None
 
-def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, llm: bool=False, emb: bool=False, agent: bool=False, resource_type: ResourceType=ResourceType.DBPEDIA):
+def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, llm: bool=False, agent: bool=False, resource_type: ResourceType=ResourceType.DBPEDIA):
     sparql = SPARQLWrapper(endpoint, agent=AGENT) if agent else SPARQLWrapper(endpoint)
     visited = set()
     # Track visited nodes
@@ -46,8 +47,6 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
         it=0
         for a in queue:
             c,_=a
-            if it<=10:
-                print(" -------------------------- "+c[0]+" "+str(c[1]))
             it=it+1
             lis.append(c[0]+" "+str(c[1]))
         current_node, path = queue.pop(0)
@@ -57,19 +56,16 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
 
         if current_node[0] in visited:
             continue
-        print(" ---------------> "+current_node[0])
         visited.add(current_node[0])
-        print("PATH SO FAR "+str(path))
         ilen=0
         for step2 in path:
             ilen=ilen+1
 
         # Check if we reached the target node
         if current_node[0] == target_node or (not llm and result2 in target_node):
-            print(path)
             path=path + [(current_node, "reached", target_node)]
             for step in path:
-                print(f"{step[0]} --{step[1]}--> {step[2]}")
+                LOGGER.info(f"{step[0]} --{step[1]}--> {step[2]}")
             return ilen, path
 
         # Query outgoing links from the current node
@@ -85,7 +81,6 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
             }}
             """
         sparql.setQuery(stoa)
-        print(stoa)
         
         sparql.setReturnFormat(JSON)
 
@@ -94,7 +89,7 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
             if isinstance(results, bytes):  # Decode if necessary
                 results = loads(results.decode("utf-8"))
         except Exception as e:
-            print(f"Error querying SPARQL endpoint: {e}")
+            LOGGER.exception(f"Error querying SPARQL endpoint: {e}")
             print_exc() 
             continue
         lista=[]
@@ -112,8 +107,6 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
                     lista.append(next_node)
                     lista2.append(predicate+" "+next_node)
                     
-        print(str(lista))
-        
         if lista.__len__()>1:
             epel=3
             toyl=lista.__len__()
@@ -123,7 +116,6 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
                 epel=toyl-1 if not llm else 11
             else:
                 epel=toyl-1
-            print("EPEL "+str(epel))
 
             if llm:
                 stringas="do not insert δικους σου nodes αλλα επελεξε ακριβως "+str(epel)+" αν ειναι διαθεσιμoi απο την "+str(lista)+" αυτους που πλησιαζουν πιο πολυ  α΄΄΄΄λλα και αλλους που θα μπορουσαν πιο πιθανα να οδηγησουν στον κομβο  "+target_node+" επελεξε συνολικα +"+str(epel)+"και δωσε τους ενα σκορ εγγυτητας με τρια δεκαδικα. εαν δεν πλησιαζει πολυ δωσε σκορ κατω απο 0.4. Αν πλησιζει πολυ δωσε πανω απο 0.7. Επελεξε τους κομβους με τα μεγαλυτερα σκορ. Επισης μην επιλεξεις nodes που αναφερονται σε γενικες κατηγοριες αλλα μονο σε υπαρκτα entities. Return them  as string of entities. An entity is node comma score. Score is from 0.0 for irrelevant to target to 1 .if the node includes the word of the target, return as a score 1.0 .Do not comment scores.If target node is exacly found in list give it score 500.0. Final string is entity#entity#entity etc mean seperate entities with without headers # Return plain string.Αν δεν ειναι διαθεσιμοι 6 κομβοι δεν πειραζει και ΜΗΝ ΔΗΜΙΟΥΡΓΗΣΕΙΣ ΚΟΜΒΟΥΣ ΑΠΟ ΤΗΝ ΔΙΚΗ ΣΟΥ ΓΝΩΣΗ που δεν υπαρχουν στην λιστα. ΑΚΟΜΑ ΚΑΙ ΕΝΑΣ ΝΑ ΕΙΝΑΙ Ο ΚΟΜΒΟΣ ΕΠΕΣΤΡΕΨΕ ΤΟΝ"
@@ -158,14 +150,12 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
                     last_part2=last_part.replace("_"," ")
                     word_entity_sim = get_entity_similarity(si1, last_part2)
 
-                    print(f"\nSimilarity between {si1} and {last_part2}: {word_entity_sim}")
+                    LOGGER.info(f"\nSimilarity between {si1} and {last_part2}: {word_entity_sim}")
                     if word_entity_sim is not None:
                         oka=oka+prf+last_part+","+str(word_entity_sim)+"#"
                         lss=[prf+last_part,float(word_entity_sim)]
                         loa.append(lss)
                         
-                print(loa)
-            
                 oka=''
                 apa=0
                 # Sort in descending order based on the second element (similarity score)
@@ -188,8 +178,6 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
             
             tups=ra.split('#')
             
-            print("TUPS "+str(tups))
-            
             if lista:
                 for ft in tups:
                     try:
@@ -197,7 +185,6 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
                         sco[0]=sco[0].replace(' ','')
                         sco[0]=sco[0].replace('\'','')
                         sco[1]=sco[1].replace('\'','')
-                        print("SCO +"+str(sco))
                         position=-1
                         if sstart==0:
                             
@@ -218,7 +205,7 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
                                     
                                     
                                 except Exception as e:
-                                    print(f"An error occurred: {e}")
+                                    LOGGER.exception(f"An error occurred: {e}")
                                     print_exc() 
                                     break
                                     
@@ -229,7 +216,7 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
                             if position != -1:
                                 queue.insert(position,(sco, path + [(current_node, dicta[sco[0]], sco)]))
                     except Exception as e:
-                        print(f"An error occurred: {e}")
+                        LOGGER.exception(f"An error occurred: {e}")
                         print_exc() 
                         
     # If queue exhausts without finding target
@@ -279,28 +266,23 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
      
         if current_node[0] in visited:
             continue
-        print(" ---------------> "+current_node[0])
         visited.add(current_node[0])
-        print("PATH SO FAR "+str(path))
         ilen=0
         for step2 in path:
             ilen=ilen+1
 
         # Check if we reached the target node
         if current_node[0] == target_node or (not llm and result2 in target_node):
-            print(path)
             path=path + [(current_node, "reached", target_node)]
             
             for step in path:
-                print(f"{step[0]} --{step[1]}--> {step[2]}")
+                LOGGER.info(f"{step[0]} --{step[1]}--> {step[2]}")
                 
-                #print("APOK "+str(step[1])+" MONS "+step[1][0])
                 aka1=step[0][0]
                 aka2=step[1]
                 aka3=step[2][0]
                 if "reached" not in aka2:
-                    print(f"{dicta22[aka1]} -- {dicta33[aka2]}--> {dicta22[aka3]} ")
-                # print(f"{dicta22[aka1]} -- {aka2}--> {dicta22[aka3]} ")
+                    LOGGER.info(f"{dicta22[aka1]} -- {dicta33[aka2]}--> {dicta22[aka3]} ")
 
             return ilen, path
 
@@ -335,7 +317,7 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
             if isinstance(results, bytes):  # Decode if necessary
                 results = loads(results.decode("utf-8"))
         except Exception as e:
-            print(f"Error querying SPARQL endpoint: {e}")
+            LOGGER.exception(f"Error querying SPARQL endpoint: {e}")
             print_exc() 
             continue
         lista=[]
@@ -367,8 +349,6 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
 
             dicta22[start_node]=start_node_raw
               
-        print(str(lista))
-        
         if lista.__len__()>1:
             epel=3
             toyl=lista.__len__()
@@ -411,15 +391,12 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
                     last_part=l
                     last_part2=dicta22[l]
                     word_entity_sim = get_entity_similarity(si1, last_part2)
-                    print(f"\nSimilarity between {si1} and {last_part2}: {word_entity_sim}")
+                    LOGGER.info(f"\nSimilarity between {si1} and {last_part2}: {word_entity_sim}")
                     if word_entity_sim is not None:
                         oka=oka+prf+last_part+","+str(word_entity_sim)+"#"
                         lss=[prf+last_part,float(word_entity_sim)]
-                        print(lss)
                         loa.append(lss)
                         
-                print(loa)
-            
                 oka=''
                 apa=0
                 # Sort in descending order based on the second element (similarity score)
@@ -427,7 +404,7 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
                 
                 # Print sorted list
                 for item in sorted_data:
-                    print(item)
+                    LOGGER.info(item)
                     a1=item[0]
                     a2=item[1]
                     oka=oka+a1+","+str(a2)+"#"
@@ -446,8 +423,6 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
             
             tups=ra.split('#')
             
-            print("TUPS "+str(tups))
-            
             if lista:
                 for ft in tups:
                     try:
@@ -455,7 +430,6 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
                         sco[0]=sco[0].replace(' ','')
                         sco[0]=sco[0].replace('\'','')
                         sco[1]=sco[1].replace('\'','')
-                        print("SCO +"+str(sco))
         
                         position=-1
                         if sstart==0:
@@ -477,7 +451,7 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
                                     
                                     
                                 except Exception as e:
-                                    print(f"An error occurred: {e}")
+                                    LOGGER.exception(f"An error occurred: {e}")
                                     print_exc() 
                                     break
                                     
@@ -488,7 +462,7 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
                             if position!=-1:
                                 queue.insert(position,(sco, path + [(current_node, dicta[sco[0]], sco)]))
                     except Exception as e:
-                        print(f"An error occurred: {e}")
+                        LOGGER.exception(f"An error occurred: {e}")
                         print_exc() 
                         
     # If queue exhausts without finding target
