@@ -1,9 +1,8 @@
-from SPARQLWrapper import JSON, SPARQLWrapper
 from time import time
 
-from utils.constants import AGENT, WIKIDATA_URL
 from utils.enums import ResourceType
-from utils.utils import find_path, find_path_between_nodes, find_path_between_nodes_emb_wiki, get_entity_label, get_entity_similarity, get_wikidata_uri
+from utils.pathfinder import find_path, find_path_between_nodes_emb_wiki
+from utils.utils import get_entity_label, get_entity_similarity, get_wikidata_uri
 
 def join(entity1: str, entity2: str):
     now = time()

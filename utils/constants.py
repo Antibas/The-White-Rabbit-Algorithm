@@ -10,15 +10,17 @@ DBPEDIA_URL = "https://dbpedia.org/sparql"
 DBPEDIA_RESOURCE_URL = "http://dbpedia.org/resource"
 WIKIDATA_URL = "https://query.wikidata.org/sparql"
 WIKIDATA_RESOURCE_URL = "http://www.wikidata.org/entity/"
+YAGOS_URL = "https://yago-knowledge.org/sparql/query."
+YAGOS_RESOURCE_URL="http://yago-knowledge.org/resource"
 AGENT=getenv("AGENT", "MyWikidataBotPAATH/2.0 (giannis_vassiliou@yahoo.gr")
 SPARQL_PREFIX = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>  PREFIX schema: <http://schema.org/> PREFIX yago: <http://yago-knowledge.org/resource/>"
 BASE_URLS = {
     ResourceType.DBPEDIA: DBPEDIA_URL,
     ResourceType.WIKIDATA: WIKIDATA_URL,
-    ResourceType.YAGOS: ""
+    ResourceType.YAGOS: YAGOS_URL
 }
 RESOURCE_URLS = {
     ResourceType.DBPEDIA: DBPEDIA_RESOURCE_URL,
     ResourceType.WIKIDATA: WIKIDATA_RESOURCE_URL,
-    ResourceType.YAGOS: ""
+    ResourceType.YAGOS: YAGOS_RESOURCE_URL
 }

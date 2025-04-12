@@ -1,7 +1,8 @@
 from time import time
 
 from utils.constants import DBPEDIA_RESOURCE_URL, DBPEDIA_URL
-from utils.utils import find_path, find_path_between_nodes, get_entity_similarity
+from utils.pathfinder import find_path, find_path_between_nodes
+from utils.utils import get_entity_similarity
 
 def join(entity1: str, entity2: str):
     now = time()
