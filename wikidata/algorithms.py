@@ -3,25 +3,7 @@ from time import time
 
 from utils.constants import AGENT, WIKIDATA_URL
 from utils.enums import ResourceType
-from utils.utils import find_path, find_path_between_nodes, get_entity_label, get_entity_similarity
-
-def get_wikidata_uri(label: str):
-    sparql = SPARQLWrapper(WIKIDATA_URL,agent=AGENT)
-    
-    query = f"""
-    SELECT ?item WHERE {{
-      ?item rdfs:label "{label}"@en.
-    }}
-    LIMIT 1
-    """
-    
-    sparql.setQuery(query)
-    sparql.setReturnFormat(JSON)
-    results = sparql.query().convert()
-    
-    if results["results"]["bindings"]:
-        return results["results"]["bindings"][0]["item"]["value"]
-    return None
+from utils.utils import find_path, find_path_between_nodes, find_path_between_nodes_emb_wiki, get_entity_label, get_entity_similarity, get_wikidata_uri
 
 def join(entity1: str, entity2: str):
     now = time()
@@ -111,12 +93,12 @@ def join(entity1: str, entity2: str):
 
 def embedding(entity1: str, entity2: str):
     now = time()
-    start_node=get_wikidata_uri(entity1)
-    target_node=get_wikidata_uri(entity2)
+    # start_node=get_wikidata_uri(entity1)
+    # target_node=get_wikidata_uri(entity2)
 
     word_entity_sim = get_entity_similarity(entity1, entity2)
-    print(f"\nSimilarity between {start_node} and {target_node}: {word_entity_sim}")
-    depth,path = find_path_between_nodes(start_node, target_node, WIKIDATA_URL, resource_type=ResourceType.WIKIDATA, agent=True, emb=True)
+    print(f"\nSimilarity between {entity1} and {entity2}: {word_entity_sim}")
+    depth,path = find_path_between_nodes_emb_wiki(entity1, entity2)#, resource_type=ResourceType.WIKIDATA, agent=True, emb=True)
     if not path:
         return time()-now, 0, 0, 0
     

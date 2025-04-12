@@ -4,7 +4,7 @@ from traceback import print_exc
 from SPARQLWrapper import JSON, SPARQLWrapper
 from anthropic import Anthropic
 import numpy as np
-from utils.constants import AGENT, SPARQL_PREFIX, RESOURCE_URLS, BASE_URLS, WIKI2VEC
+from utils.constants import AGENT, SPARQL_PREFIX, RESOURCE_URLS, BASE_URLS, WIKI2VEC, WIKIDATA_URL
 from utils.enums import ResourceType
 
 def find_path(entity1: str, entity2: str, max_depth: int=15, agent: bool=False, resource_type: ResourceType=ResourceType.DBPEDIA):#, wikidata: bool=False):
@@ -364,6 +364,241 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
                                 position=len(queue)-1
                                 
                             if position != -1:
+                                queue.insert(position,(sco, path + [(current_node, dicta[sco[0]], sco)]))
+                    except Exception as e:
+                        print(f"An error occurred: {e}")
+                        print_exc() 
+                        
+    # If queue exhausts without finding target
+    return 0, []
+
+def get_wikidata_uri(label: str):
+    sparql = SPARQLWrapper(WIKIDATA_URL,agent=AGENT)
+    
+    query = f"""
+    SELECT ?item WHERE {{
+      ?item rdfs:label "{label}"@en.
+    }}
+    LIMIT 1
+    """
+    
+    sparql.setQuery(query)
+    sparql.setReturnFormat(JSON)
+    results = sparql.query().convert()
+    
+    if results["results"]["bindings"]:
+        return results["results"]["bindings"][0]["item"]["value"]
+    return None
+
+def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str):
+    sparql = SPARQLWrapper(WIKIDATA_URL,agent=AGENT)
+    visited = set()
+    dicta11={}
+    dicta22={}
+    dicta33={}
+    dicta22[start_node_raw]=start_node_raw
+    start_node=get_wikidata_uri(start_node_raw)
+    target_node=get_wikidata_uri(target_node_raw)
+      # Track visited nodes
+    sstart=0
+    #startnode[0]=start_node    
+    queue = [([start_node,0.0], []),([start_node,0.0], [])]  # Queue of (current_node, path_so_far)
+
+    
+    while queue:
+        lis=[]
+        it=0
+        for a in queue:
+            c,_=a
+            it=it+1
+            lis.append(c[0]+" "+str(c[1]))
+        current_node, path = queue.pop(0)
+        
+        result2 = current_node[0].split("resource/")[-1]
+     
+
+        if current_node[0] in visited:
+            continue
+        print(" ---------------> "+current_node[0])
+        visited.add(current_node[0])
+        print("PATH SO FAR "+str(path))
+        ilen=0
+        for step2 in path:
+            ilen=ilen+1
+
+        # Check if we reached the target node
+        if current_node[0] == target_node or result2 in target_node:
+            print(path)
+            path=path + [(current_node, "reached", target_node)]
+            
+            for step in path:
+                print(f"{step[0]} --{step[1]}--> {step[2]}")
+                
+                #print("APOK "+str(step[1])+" MONS "+step[1][0])
+                aka1=step[0][0]
+                aka2=step[1]
+                aka3=step[2][0]
+                if "reached" not in aka2:
+                    print(f"{dicta22[aka1]} -- {dicta33[aka2]}--> {dicta22[aka3]} ")
+                # print(f"{dicta22[aka1]} -- {aka2}--> {dicta22[aka3]} ")
+
+            return ilen, path
+            #return path + [(current_node, "reached", target_node)]
+
+        # Query outgoing links from the current node
+        
+        stoa=f""" {SPARQL_PREFIX} 
+        SELECT distinct ?next_node ?predicate  ?label ?plabel ?pdesc  WHERE {{
+             <{current_node[0]}> ?predicate ?next_node .
+               ?next_node rdfs:label ?label .
+                   ?next_node rdfs:label ?label .
+
+        BIND(IRI(REPLACE(STR(?predicate), "^.*/(P\\\\d+)$", "http://www.wikidata.org/entity/$1")) as ?property)
+        
+        # Language filter for English labels
+        FILTER(LANG(?label) = "en")
+        
+        # Filter out wiki page links
+        FILTER(?predicate != <http://dbpedia.org/ontology/wikiPageWikiLink>)
+        
+        # Get predicate labels and descriptions
+        SERVICE wikibase:label {{ 
+            bd:serviceParam wikibase:language "en" .
+            ?predicate rdfs:label ?plabel .
+            ?property schema:description ?pdesc .
+        }} 
+        }} limit 500
+        """
+        sparql.setQuery(stoa)
+        sparql.setReturnFormat(JSON)
+        try:
+            results = sparql.query().convert()
+            if isinstance(results, bytes):  # Decode if necessary
+                results = loads(results.decode("utf-8"))
+        except Exception as e:
+            print(f"Error querying SPARQL endpoint: {e}")
+            print_exc() 
+            continue
+        lista=[]
+        lista2=[]
+        dicta={}
+        dicta11[current_node[0]]=start_node_raw
+        dicta11[target_node]=target_node_raw
+        # Process each outgoing link and add it to the queue if not visited
+        if results.get("results") and results["results"].get("bindings"):
+            for result in results["results"]["bindings"]:
+                next_node = result["next_node"]["value"]
+                predicate = result["predicate"]["value"]
+                lab = result['label']["value"]
+                lab2 = result['pdesc']["value"]
+                dicta33[predicate]=lab2
+                dicta22[next_node]=lab
+                dicta[next_node]=predicate
+         
+                # Append to the path and add to the queue
+                
+                if is_english_only(next_node) and next_node not in visited  and 'Category' not in next_node and 'Template' not in next_node:
+
+                    lista.append(next_node)
+                    lista2.append(predicate+" "+next_node)
+            
+
+            dicta22[start_node]=start_node_raw
+              
+        print(str(lista))
+        
+        if lista.__len__()>1:
+            epel=3
+            toyl=lista.__len__()
+            if toyl>6 and toyl<=12:
+                epel=11
+            elif toyl>12:
+                epel=toyl-1
+            else:
+                epel=toyl-1
+            si=target_node
+            si1=si.rsplit('/', 1)[-1]
+            si1=si1.replace("_"," ")
+            si1=target_node_raw
+            oka=""
+            prf=""           
+            loa=[]
+            for l in lista:
+                last_part=l
+                last_part2=dicta22[l]
+                word_entity_sim = get_entity_similarity(si1, last_part2)
+                print(f"\nSimilarity between {si1} and {last_part2}: {word_entity_sim}")
+                if word_entity_sim is not None:
+                    oka=oka+prf+last_part+","+str(word_entity_sim)+"#"
+                    lss=[prf+last_part,float(word_entity_sim)]
+                    print(lss)
+                    loa.append(lss)
+                    
+            print(loa)
+         
+            oka=''
+            apa=0
+            # Sort in descending order based on the second element (similarity score)
+            sorted_data = sorted(loa, key=lambda x: x[1], reverse=True)
+            
+            # Print sorted list
+            for item in sorted_data:
+                print(item)
+                a1=item[0]
+                a2=item[1]
+                oka=oka+a1+","+str(a2)+"#"
+                if apa==epel:
+                    break
+                apa=apa+1
+
+            oka=oka.rstrip()
+            response=oka
+            ra=response
+            ra=ra.replace('\n','')
+    
+            
+            tups=ra.split('#')
+            
+            print("TUPS "+str(tups))
+            
+            if lista:
+                for ft in tups:
+                    try:
+                        sco=ft.split(',')
+                        sco[0]=sco[0].replace(' ','')
+                        sco[0]=sco[0].replace('\'','')
+                        sco[1]=sco[1].replace('\'','')
+                        print("SCO +"+str(sco))
+        
+                        position=-1
+                        if sstart==0:
+                            
+                            position=0
+                            sstart=1
+                            queue.insert(position,(sco, path + [(current_node, dicta[sco[0]], sco)]))
+                        else:          
+                            i=0  
+                            
+                            while True:
+                                if i>=queue.__len__():
+                                    break
+                                a,b=queue[i]
+                                try:
+                                    if  float(a[1])<float(sco[1]):
+                                            position=i
+                                            break
+                                    
+                                    
+                                except Exception as e:
+                                    print(f"An error occurred: {e}")
+                                    print_exc() 
+                                    break
+                                    
+                                i=i+1 
+                            if i>=len(queue):
+                                position=len(queue)-1
+                                
+                            if position!=-1:
                                 queue.insert(position,(sco, path + [(current_node, dicta[sco[0]], sco)]))
                     except Exception as e:
                         print(f"An error occurred: {e}")
