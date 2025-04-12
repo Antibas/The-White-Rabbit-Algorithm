@@ -4,7 +4,101 @@ from traceback import print_exc
 from SPARQLWrapper import JSON, SPARQLWrapper
 from anthropic import Anthropic
 import numpy as np
-from utils.constants import SPARQL_PREFIX, SPARQL_RESOURCE_URL, WIKI2VEC
+from utils.constants import AGENT, SPARQL_PREFIX, SPARQL_RESOURCE_URL, SPARQL_URL, WIKI2VEC
+
+def find_path(entity1: str, entity2: str, max_depth: int=15, agent: bool=False):
+    """
+    Βρίσκει μονοπάτι μεταξύ δύο οντοτήτων στο DBpedia μέσω SPARQL queries.
+    """
+    sparql = SPARQLWrapper(SPARQL_URL, agent=AGENT) if agent else SPARQLWrapper(SPARQL_URL)
+
+    # Μετατροπή οντοτήτων σε πλήρη URIs εάν δεν έχουν ήδη.
+    if not entity1.startswith("http"):
+        entity1 = f"{SPARQL_RESOURCE_URL}{entity1}"
+    if not entity2.startswith("http"):
+        entity2 = f"{SPARQL_RESOURCE_URL}{entity2}"
+
+    # Επαναληπτική εκτέλεση queries μέχρι το μέγιστο βάθος
+    for depth in range(1, max_depth + 1):
+        print(f"Executing query with depth {depth}...")
+        query = construct_query(entity1, entity2, depth)
+
+        results = execute_query(sparql, query)
+
+        if results and results["results"]["bindings"]:
+            print(f"Path found at depth {depth}!")
+            return depth, results["results"]["bindings"]
+
+    print("No path found within the given depth.")
+    return None, None
+
+def execute_query(sparql: SPARQLWrapper, query: str):
+    """
+    Εκτελεί το SPARQL query και επιστρέφει τα αποτελέσματα.
+    """
+    sparql.setQuery(query)
+    sparql.setReturnFormat(JSON)
+    sparql.setTimeout(60)
+    try:
+        results = sparql.query().convert()
+        return results
+    except Exception as e:
+        print(f"Error executing query: {e}")
+        return None
+
+def construct_query(entity1: str, entity2: str, depth: int, wikidata: bool=False):
+    """
+    Δημιουργεί ένα SPARQL query για την εύρεση μονοπατιού μεταξύ δύο οντοτήτων.
+    Εξαιρεί τριπλέτες με predicate `http://dbpedia.org/ontology/wikiPageWikiLink`.
+    """
+    
+    if not wikidata and depth==1:
+        query = f"""
+        PREFIX dbo: <http://dbpedia.org/ontology/>
+        SELECT * WHERE {{
+        <{entity1}> ?p0 <{entity2}> .
+        FILTER (?p0 != <http://dbpedia.org/ontology/wikiPageWikiLink>)
+        """
+    else:
+        query = f"""
+        PREFIX dbo: <http://dbpedia.org/ontology/>
+        SELECT * WHERE {{
+        <{entity1}> ?p0 ?x1 .
+        FILTER (?p0 != <http://dbpedia.org/ontology/wikiPageWikiLink>)
+        """
+        if not wikidata:
+            depth -= 1
+        for i in range(1, depth):
+            query += f"?x{i} ?p{i} ?x{i+1} .\n"
+            query += f"FILTER (?p{i} != <http://dbpedia.org/ontology/wikiPageWikiLink>)\n"
+
+       
+        query += f"?x{depth} ?p{depth} <{entity2}> .\n"
+        query += f"FILTER (?p{depth} != <http://dbpedia.org/ontology/wikiPageWikiLink>)\n"
+
+    query += "} limit 1"
+    return query
+
+def get_entity_label(entity_id: str):
+    sparql = SPARQLWrapper("https://query.wikidata.org/sparql")
+    
+    query = f"""
+    SELECT ?item ?itemLabel WHERE {{
+      BIND(<{entity_id}> AS ?item)
+      SERVICE wikibase:label {{ bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }}
+    }}
+    """
+    
+    sparql.setQuery(query)
+    sparql.setReturnFormat(JSON)
+    results = sparql.query().convert()
+    
+    # Extract label from the results
+    if results["results"]["bindings"]:
+        label = results["results"]["bindings"][0]["itemLabel"]["value"]
+        return label
+    
+    return None
 
 def get_entity_similarity(entity1: str, entity2: str):
     """
