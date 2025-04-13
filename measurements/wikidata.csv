@@ -1,2 +1,4 @@
 ,,JOIN,,,WIKIVEC,,,LLM,,,
 Source Node,Target Node,time,length,nn,nt,time,length,nn,nt,time,length,nn,nt
+Athens,Moscow,2,1,0.0,0.0,4,1,0.48,0.48,6,1,0.48,0.48
+Hanoi,Barcelona,1,1,0.82,0.46,6,3,0.56,0.49,183,5,0.62,0.39

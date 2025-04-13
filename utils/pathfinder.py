@@ -182,6 +182,8 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
                 for ft in tups:
                     try:
                         sco=ft.split(',')
+                        if len(sco) <= 1:
+                            continue
                         sco[0]=sco[0].replace(' ','')
                         sco[0]=sco[0].replace('\'','')
                         sco[1]=sco[1].replace('\'','')
@@ -199,7 +201,7 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
                                     break
                                 a,_=queue[i]
                                 try:
-                                    if  float(a[1])<float(sco[1]):
+                                    if float(a[1])<float(sco[1]):
                                             position=i
                                             break
                                     
@@ -427,6 +429,8 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
                 for ft in tups:
                     try:
                         sco=ft.split(',')
+                        if len(sco) <= 1:
+                            continue
                         sco[0]=sco[0].replace(' ','')
                         sco[0]=sco[0].replace('\'','')
                         sco[1]=sco[1].replace('\'','')
@@ -445,7 +449,7 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
                                     break
                                 a,_=queue[i]
                                 try:
-                                    if  float(a[1])<float(sco[1]):
+                                    if float(a[1])<float(sco[1]):
                                             position=i
                                             break
                                     
