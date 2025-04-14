@@ -87,18 +87,20 @@ def get_entity_similarity(entity1: str, entity2: str):
         float: Similarity score between 0 and 1
     """
     try:
+        if not entity1.strip() or not entity2.strip():
+            return 0
         # Get entity embeddings
-        entity1_vec = WIKI2VEC.get_entity_vector(entity1)
-        entity2_vec = WIKI2VEC.get_entity_vector(entity2)
+        entity1_vec = WIKI2VEC.get_entity_vector(entity1.strip())
+        entity2_vec = WIKI2VEC.get_entity_vector(entity2.strip())
         
         # Calculate cosine similarity
-        similarity = np.dot(entity1_vec, entity2_vec) / (
+        similarity: float = np.dot(entity1_vec, entity2_vec) / (
         np.linalg.norm(entity1_vec) * np.linalg.norm(entity2_vec)
         )
         return similarity
     except KeyError as e:
         LOGGER.exception(f"Entity not found: {e}")
-        return None
+        return 0
 
 def get_most_similar_entities(entity_title, top_k=10):
     """

@@ -45,49 +45,31 @@ def join(entity1: str, entity2: str):
     entity2= entity2.replace("_"," ").replace("-"," ")
 
     word_entity_similarity = get_entity_similarity(entity1, xa2)
-    if word_entity_similarity is None:
-        totalp+=0
-    else:
-        totalp+= word_entity_similarity
+    totalp+= word_entity_similarity
     word_entity_similarity2 = get_entity_similarity(entity1, entity2)
-    if word_entity_similarity2 is None:
-        totale+=0
-    else:
-        totale+= word_entity_similarity2
+    totale+= word_entity_similarity2
 
-    LOGGER.info(f"\nSimilarity between {entity1} and {xa2}: {word_entity_similarity}")
+    LOGGER.info(f"Similarity between {entity1} and {xa2}: {word_entity_similarity}")
     for triple in triples:
         LOGGER.info(f"({triple[0]}, {triple[1]}, {triple[2]})")
         xa0= triple[0].rsplit('/', 1)[-1].replace("_"," ").replace("-"," ")
         xa2= triple[2].rsplit('/', 1)[-1].replace("_"," ").replace("-"," ")
 
         word_entity_similarity = get_entity_similarity(xa0, xa2)
-        if word_entity_similarity is None:
-            totalp+=0
-        else:
-            totalp+= word_entity_similarity
+        totalp+= word_entity_similarity
 
         word_entity_similarity2 = get_entity_similarity(xa0, entity2)
-        if word_entity_similarity2 is None:
-            totale+=0
-        else:
-            totale+= word_entity_similarity2
-        LOGGER.info(f"\nSimilarity between {xa0} and {xa2}: {word_entity_similarity}")
+        totale+= word_entity_similarity2
+        LOGGER.info(f"Similarity between {xa0} and {xa2}: {word_entity_similarity}")
 
     xa0= last_x_value.rsplit('/', 1)[-1].replace("_"," ").replace("-"," ")
     word_entity_similarity = get_entity_similarity(xa0, entity2)
 
-    if word_entity_similarity is None:
-        totalp+=0
-    else:
-        totalp+= word_entity_similarity
+    totalp+= word_entity_similarity
 
     word_entity_similarity2 = get_entity_similarity(xa0, entity2)
-    if word_entity_similarity2 is None:
-        totale+=0
-    else:
-        totale+= word_entity_similarity2
-    LOGGER.info(f"\nSimilarity between {xa0} and {entity2}: {word_entity_similarity}")
+    totale+= word_entity_similarity2
+    LOGGER.info(f"Similarity between {xa0} and {entity2}: {word_entity_similarity}")
     nn = totalp/(float(depth))
     nt = totale/(float(depth))
     return round(now2-now), depth, round(nn, 2), round(nt, 2)
@@ -98,7 +80,7 @@ def embedding(entity1: str, entity2: str):
     now = time()
     word_entity_sim = get_entity_similarity(entity1, entity2)
     
-    LOGGER.info(f"\nSimilarity between {start_node} and {target_node}: {word_entity_sim}")
+    LOGGER.info(f"Similarity between {start_node} and {target_node}: {word_entity_sim}")
     depth,path = find_path_between_nodes(start_node, target_node, f"{DBPEDIA_URL}/query")
     if not path:
         return time()-now, 0, 0, 0
@@ -121,17 +103,11 @@ def embedding(entity1: str, entity2: str):
         xa3=xa3.replace("_"," ").replace("-",' ')
     
         word_entity_similarity = get_entity_similarity(xa0, xa2)
-        if word_entity_similarity is None:
-            totalp+=0
-        else:
-            totalp+= word_entity_similarity
+        totalp+= word_entity_similarity
     
         word_entity_similarity2 = get_entity_similarity(xa0, xa3)
-        if word_entity_similarity2 is None:
-            totale+=0
-        else:
-            totale+= word_entity_similarity2
-        LOGGER.info(f"\nSimilarity between {xa0} and {xa2}: {word_entity_similarity} {word_entity_similarity2} ")
+        totale+= word_entity_similarity2
+        LOGGER.info(f"Similarity between {xa0} and {xa2}: {word_entity_similarity} {word_entity_similarity2} ")
         ida=ida+1
         if ida==lana:
             break
@@ -145,7 +121,7 @@ def llm(entity1: str, entity2: str):
     now = time()
     word_entity_sim = get_entity_similarity(entity1, entity2)
     
-    LOGGER.info(f"\nSimilarity between {start_node} and {target_node}: {word_entity_sim}")
+    LOGGER.info(f"Similarity between {start_node} and {target_node}: {word_entity_sim}")
     depth,path = find_path_between_nodes(start_node, target_node, f"{DBPEDIA_URL}/query", llm=True)
     if not path:
         return time()-now, 0, 0, 0
@@ -167,17 +143,11 @@ def llm(entity1: str, entity2: str):
         xa3=xa3.replace("_"," ").replace("-",' ')
     
         word_entity_similarity = get_entity_similarity(xa0, xa2)
-        if word_entity_similarity is None:
-            totalp+=0
-        else:
-            totalp+= word_entity_similarity
+        totalp+= word_entity_similarity
     
         word_entity_similarity2 = get_entity_similarity(xa0, xa3)
-        if word_entity_similarity2 is None:
-            totale+=0
-        else:
-            totale+= word_entity_similarity2
-        LOGGER.info(f"\nSimilarity between {xa0} and {xa2}: {word_entity_similarity} {word_entity_similarity2} ")
+        totale+= word_entity_similarity2
+        LOGGER.info(f"Similarity between {xa0} and {xa2}: {word_entity_similarity} {word_entity_similarity2} ")
         ida=ida+1
         if ida==lana:
             break

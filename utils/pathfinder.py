@@ -57,16 +57,16 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
         if current_node[0] in visited:
             continue
         visited.add(current_node[0])
-        ilen=0
-        for step2 in path:
-            ilen=ilen+1
+        # ilen=0
+        # for step2 in path:
+        #     ilen=ilen+1
 
         # Check if we reached the target node
         if current_node[0] == target_node or (not llm and result2 in target_node):
             path=path + [(current_node, "reached", target_node)]
             for step in path:
                 LOGGER.info(f"{step[0]} --{step[1]}--> {step[2]}")
-            return ilen, path
+            return len(path), path
 
         # Query outgoing links from the current node
         
@@ -150,7 +150,7 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
                     last_part2=last_part.replace("_"," ")
                     word_entity_sim = get_entity_similarity(si1, last_part2)
 
-                    LOGGER.info(f"\nSimilarity between {si1} and {last_part2}: {word_entity_sim}")
+                    LOGGER.info(f"Similarity between {si1} and {last_part2}: {word_entity_sim}")
                     if word_entity_sim is not None:
                         oka=oka+prf+last_part+","+str(word_entity_sim)+"#"
                         lss=[prf+last_part,float(word_entity_sim)]
@@ -269,9 +269,9 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
         if current_node[0] in visited:
             continue
         visited.add(current_node[0])
-        ilen=0
-        for step2 in path:
-            ilen=ilen+1
+        # ilen=0
+        # for step2 in path:
+        #     ilen=ilen+1
 
         # Check if we reached the target node
         if current_node[0] == target_node or (not llm and result2 in target_node):
@@ -286,7 +286,7 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
                 if "reached" not in aka2:
                     LOGGER.info(f"{dicta22[aka1]} -- {dicta33[aka2]}--> {dicta22[aka3]} ")
 
-            return ilen, path
+            return len(path), path
 
         # Query outgoing links from the current node
         
@@ -393,7 +393,7 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
                     last_part=l
                     last_part2=dicta22[l]
                     word_entity_sim = get_entity_similarity(si1, last_part2)
-                    LOGGER.info(f"\nSimilarity between {si1} and {last_part2}: {word_entity_sim}")
+                    LOGGER.info(f"Similarity between {si1} and {last_part2}: {word_entity_sim}")
                     if word_entity_sim is not None:
                         oka=oka+prf+last_part+","+str(word_entity_sim)+"#"
                         lss=[prf+last_part,float(word_entity_sim)]
