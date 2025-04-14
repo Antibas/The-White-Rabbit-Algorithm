@@ -16,7 +16,7 @@ def execute_query(sparql: SPARQLWrapper, query: str):
         results = sparql.query().convert()
         return results
     except Exception as e:
-        LOGGER.exception(f"Error executing query: {e}")
+        LOGGER.error(f"Error executing query: {e}")
         return None
 
 def construct_query(entity1: str, entity2: str, depth: int, wikidata: bool):
@@ -99,7 +99,7 @@ def get_entity_similarity(entity1: str, entity2: str):
         )
         return similarity
     except KeyError as e:
-        LOGGER.exception(f"Entity not found: {e}")
+        LOGGER.error(f"Entity not found: {e}")
         return 0
 
 def get_most_similar_entities(entity_title, top_k=10):
@@ -116,7 +116,7 @@ def get_most_similar_entities(entity_title, top_k=10):
     try:
         return WIKI2VEC.most_similar(WIKI2VEC.get_entity(entity_title), top_k)
     except KeyError as e:
-        LOGGER.exception(f"Entity not found: {e}")
+        LOGGER.error(f"Entity not found: {e}")
         return None
 
 def get_word_entity_similarity(word, entity_title):
@@ -139,7 +139,7 @@ def get_word_entity_similarity(word, entity_title):
         )
         return similarity
     except KeyError as e:
-        LOGGER.exception(f"Word or entity not found: {e}")
+        LOGGER.error(f"Word or entity not found: {e}")
         return None
 
 def is_english_only(s):

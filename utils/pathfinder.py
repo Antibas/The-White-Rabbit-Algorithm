@@ -89,7 +89,7 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
             if isinstance(results, bytes):  # Decode if necessary
                 results = loads(results.decode("utf-8"))
         except Exception as e:
-            LOGGER.exception(f"Error querying SPARQL endpoint: {e}")
+            LOGGER.error(f"Error querying SPARQL endpoint: {e}")
             print_exc() 
             continue
         lista=[]
@@ -207,7 +207,7 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
                                     
                                     
                                 except Exception as e:
-                                    LOGGER.exception(f"An error occurred: {e}")
+                                    LOGGER.error(f"An error occurred: {e}")
                                     print_exc() 
                                     break
                                     
@@ -218,7 +218,7 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
                             if position != -1:
                                 queue.insert(position,(sco, path + [(current_node, dicta[sco[0]], sco)]))
                     except Exception as e:
-                        LOGGER.exception(f"An error occurred: {e}")
+                        LOGGER.error(f"An error occurred: {e}")
                         print_exc() 
                         
     # If queue exhausts without finding target
@@ -319,7 +319,7 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
             if isinstance(results, bytes):  # Decode if necessary
                 results = loads(results.decode("utf-8"))
         except Exception as e:
-            LOGGER.exception(f"Error querying SPARQL endpoint: {e}")
+            LOGGER.error(f"Error querying SPARQL endpoint: {e}")
             print_exc() 
             continue
         lista=[]
@@ -455,7 +455,7 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
                                     
                                     
                                 except Exception as e:
-                                    LOGGER.exception(f"An error occurred: {e}")
+                                    LOGGER.error(f"An error occurred: {e}")
                                     print_exc() 
                                     break
                                     
@@ -466,7 +466,7 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
                             if position!=-1:
                                 queue.insert(position,(sco, path + [(current_node, dicta[sco[0]], sco)]))
                     except Exception as e:
-                        LOGGER.exception(f"An error occurred: {e}")
+                        LOGGER.error(f"An error occurred: {e}")
                         print_exc() 
                         
     # If queue exhausts without finding target
