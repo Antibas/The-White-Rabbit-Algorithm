@@ -1,7 +1,7 @@
 from csv import writer
 from multiprocessing import Process, Queue
 from typing import Callable
-from algorithms.dbpedia import join, embedding
+from algorithms.yagos import join, embedding
 
 from utils.logger import LOGGER
 
@@ -36,6 +36,6 @@ if __name__ == "__main__":
             PAIRS.append((pair_sp[0].strip(), pair_sp[1].strip()))
     for pair in PAIRS:
         LOGGER.info(f"Starting pair {pair}...")
-        with open("measurements/dbpedia.csv", "a", newline="") as csv:
+        with open("measurements/yago.csv", "a", newline="") as csv:
             csv_writer = writer(csv, delimiter=",")
             csv_writer.writerow([pair[0], pair[1], *timeout(join, pair[0], pair[1]), *timeout(embedding, pair[0], pair[1]), *llm(*pair)])

@@ -7,8 +7,8 @@ from utils.utils import get_entity_label, get_entity_similarity, get_wikidata_ur
 
 def join(entity1: str, entity2: str):
     now = time()
-    entity1=get_wikidata_uri(entity1)
-    entity2=get_wikidata_uri(entity2)
+    entity1=get_wikidata_uri(entity1.replace("_", " "))
+    entity2=get_wikidata_uri(entity2.replace("_", " "))
     depth,results = find_path(entity1, entity2, agent=True, resource_type=ResourceType.WIKIDATA)
 
     if not results:
@@ -78,8 +78,8 @@ def join(entity1: str, entity2: str):
 
 def embedding(entity1: str, entity2: str):
     now = time()
-    # start_node=get_wikidata_uri(entity1)
-    # target_node=get_wikidata_uri(entity2)
+    entity1=entity1.replace("_", " ")
+    entity2=entity2.replace("_", " ")
 
     word_entity_sim = get_entity_similarity(entity1, entity2)
     LOGGER.info(f"Similarity between {entity1} and {entity2}: {word_entity_sim}")
@@ -119,8 +119,8 @@ def embedding(entity1: str, entity2: str):
 
 def llm(entity1: str, entity2: str):
     now = time()
-    # start_node=get_wikidata_uri(entity1)
-    # target_node=get_wikidata_uri(entity2)
+    entity1=entity1.replace("_", " ")
+    entity2=entity2.replace("_", " ")
 
     word_entity_sim = get_entity_similarity(entity1, entity2)
     LOGGER.info(f"Similarity between {entity1} and {entity2}: {word_entity_sim}")

@@ -2,3 +2,31 @@
 Source Node,Target Node,time,length,nn,nt,time,length,nn,nt,time,length,nn,nt
 Athens,Moscow,2,1,0.0,0.0,4,1,0.48,0.48,6,1,0.48,0.48
 Hanoi,Barcelona,1,1,0.82,0.46,6,3,0.56,0.49,183,5,0.62,0.39
+Hanoi,The Beatles,17,3,0.12,0.06,157,20,0.65,0.39,0,0,0,0
+Heraklion,Montevideo,1,2,0.6,0.42,24,6,0.49,0.45,0,0,0,0
+Albert Einstein,Moscow,1,1,0.81,0.47,6,2,0.18,0.09,0,0,0,0
+Microsoft,Crete,37,3,0.15,0.29,46,10,0.57,0.51,0,0,0,0
+Marie Curie,Nigeria,1,1,0.0,0.0,8,4,0.36,0.35,0,0,0,0
+Adolf Hitler,Nicaragua,2,2,0.67,0.32,16,6,0.58,0.48,0,0,0,0
+Battle of France,Amstrad,360,0,0,0,275,35,0.63,0.48,0,0,0,0
+Italy,Mona Lisa,35,3,0.8,0.34,32,10,0.52,0.46,0,0,0,0
+Napoleon,Alexander the Great,1,1,0.43,0.22,59,15,0.7,0.62,0,0,0,0
+Smiljan,Elon Musk,44,4,0.54,0.24,214,36,0.58,0.45,0,0,0,0
+Mahatma Gandhi,Barack Obama,1,1,0.86,0.42,7,3,0.29,0.29,0,0,0,0
+Nikola Tesla,Google,2,2,0.72,0.4,12,4,0.36,0.27,0,0,0,0
+The Flintstones,Family Guy,61,4,0.15,0.12,26,10,0.6,0.55,0,0,0,0
+Albert Einstein,India,1,1,0.49,0.34,5,3,0.23,0.21,0,0,0,0
+Plato,Martin Luther King Jr.,70,4,0.14,0.12,178,23,0.66,0.41,0,0,0,0
+Finland,NATO,2,1,0.0,0.0,2,2,0.18,0.18,0,0,0,0
+Austria,Adolf Hitler,6,2,0.31,0.16,6,5,0.52,0.44,0,0,0,0
+Mona Lisa,California,2,2,0.54,0.37,22,6,0.46,0.34,0,0,0,0
+Kyriakos Mitsotakis,Winston Churchill,3,3,0.29,0.2,33,16,0.65,0.44,0,0,0,0
+Herne Bay High School,Paris,360,0,0,0,8,8,0.63,0.33,0,0,0,0
+Boris Yeltsin,China,5.669720649719238,0,0,0,360,0,0,0,0,0,0,0
+Heraklion,Artificial intelligence,360,0,0,0,360,0,0,0,0,0,0,0
+Stephen Hawking,Ludwig van Beethoven,2,2,0.0,0.0,31,12,0.62,0.52,0,0,0,0
+Indonesia,Java (programming language),360,0,0,0,360,0,0,0,0,0,0,0
+California,Vikings,63,4,0.14,0.13,35,17,0.64,0.42,0,0,0,0
+Examilia,Ano Liosia,8,4,0.32,0.48,360,0,0,0,0,0,0,0
+Rome,Sarajevo,1,1,0.77,0.45,10,9,0.65,0.56,0,0,0,0
+Battle of Dunkirk,Unix,130,6,0.46,0.25,52,27,0.63,0.42,0,0,0,0
