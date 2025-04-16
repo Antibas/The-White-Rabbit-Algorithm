@@ -1,7 +1,7 @@
 from csv import writer
 from multiprocessing import Process, Queue
 from typing import Callable
-from algorithms.yagos import join, embedding
+from algorithms.dbpedia import join, embedding, llm
 
 from utils.logger import LOGGER
 
@@ -22,7 +22,7 @@ def timeout(func: Callable[[str, str], tuple], entity1: str, entity2: str, timeo
     
     return queue.get() if not queue.empty() else (timeout,0,0,0)
 
-def llm(entity1: str, entity2: str):
+def dummy(entity1: str, entity2: str):
     return 0,0,0,0
 
 if __name__ == "__main__":
@@ -36,6 +36,7 @@ if __name__ == "__main__":
             PAIRS.append((pair_sp[0].strip(), pair_sp[1].strip()))
     for pair in PAIRS:
         LOGGER.info(f"Starting pair {pair}...")
-        with open("measurements/yago.csv", "a", newline="") as csv:
+        with open("measurements/dbpedia.csv", "a", newline="") as csv:
             csv_writer = writer(csv, delimiter=",")
-            csv_writer.writerow([pair[0], pair[1], *timeout(join, pair[0], pair[1]), *timeout(embedding, pair[0], pair[1]), *llm(*pair)])
+            # csv_writer.writerow([pair[0], pair[1], *timeout(join, pair[0], pair[1]), *timeout(embedding, pair[0], pair[1]), *dummy(*pair)])
+            csv_writer.writerow([pair[0], pair[1], *dummy(*pair), *dummy(*pair), *timeout(llm, pair[0], pair[1])])
