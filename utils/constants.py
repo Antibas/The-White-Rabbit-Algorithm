@@ -6,6 +6,7 @@ from utils.enums import ResourceType
 
 MODEL_PATH = getenv("MODEL_PATH", "enwiki_20180420_100d.pkl")
 WIKI2VEC = Wikipedia2Vec.load(MODEL_PATH)
+CLAUDE_MODEL = getenv("CLAUDE_MODEL", "claude-3-5-sonnet-20241022")
 DBPEDIA_URL = "https://dbpedia.org/sparql"
 DBPEDIA_RESOURCE_URL = "http://dbpedia.org/resource"
 WIKIDATA_URL = "https://query.wikidata.org/sparql"
