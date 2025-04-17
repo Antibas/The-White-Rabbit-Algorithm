@@ -66,7 +66,7 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
             path=path + [(current_node, "reached", target_node)]
             for step in path:
                 LOGGER.info(f"{step[0]} --{step[1]}--> {step[2]}")
-            return len(path), path
+            return len(path)-1, path
 
         # Query outgoing links from the current node
         
@@ -295,7 +295,7 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
                 if "reached" not in aka2:
                     LOGGER.info(f"{dicta22[aka1]} -- {dicta33[aka2]}--> {dicta22[aka3]} ")
 
-            return len(path), path
+            return len(path)-1, path
 
         # Query outgoing links from the current node
         

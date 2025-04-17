@@ -1,4 +1,6 @@
+from multiprocessing import Process, Queue
 from re import fullmatch
+from typing import Callable
 from SPARQLWrapper import JSON, SPARQLWrapper
 import numpy as np
 from utils.constants import AGENT, BASE_URLS, WIKI2VEC, WIKIDATA_URL
@@ -8,6 +10,33 @@ from utils.logger import LOGGER
 def claude_message(epel, lista, target_node):
     return f"do not insert δικους σου nodes αλλα επελεξε ακριβως {epel} αν ειναι διαθεσιμoi απο την {lista} αυτους που πλησιαζουν πιο πολυ  α΄΄΄΄λλα και αλλους που θα μπορουσαν πιο πιθανα να οδηγησουν στον κομβο {target_node} επελεξε συνολικα +{epel} και δωσε τους ενα σκορ εγγυτητας με τρια δεκαδικα. εαν δεν πλησιαζει πολυ δωσε σκορ κατω απο 0.4. Αν πλησιζει πολυ δωσε πανω απο 0.7. Επελεξε τους κομβους με τα μεγαλυτερα σκορ. Επισης μην επιλεξεις nodes που αναφερονται σε γενικες κατηγοριες αλλα μονο σε υπαρκτα entities. Return them  as string of entities. An entity is node comma score. Score is from 0.0 for irrelevant to target to 1 .if the node includes the word of the target, return as a score 1.0 .Do not comment scores.If target node is exacly found in list give it score 500.0. Final string is entity#entity#entity etc mean seperate entities with without headers # Return plain string.Αν δεν ειναι διαθεσιμοι 6 κομβοι δεν πειραζει και ΜΗΝ ΔΗΜΙΟΥΡΓΗΣΕΙΣ ΚΟΜΒΟΥΣ ΑΠΟ ΤΗΝ ΔΙΚΗ ΣΟΥ ΓΝΩΣΗ που δεν υπαρχουν στην λιστα. ΑΚΟΜΑ ΚΑΙ ΕΝΑΣ ΝΑ ΕΙΝΑΙ Ο ΚΟΜΒΟΣ ΕΠΕΣΤΡΕΨΕ ΤΟΝ"
 
+def _wrapper(func: Callable[[str, str], tuple], entity1: str, entity2: str, queue: Queue):
+    result = func(entity1, entity2)
+    queue.put(result)
+
+def timeout(func: Callable[[str, str], tuple], entity1: str, entity2: str, timeout: int=360):
+    queue = Queue()
+    process = Process(target=_wrapper, args=(func, entity1, entity2, queue))
+    process.start()
+    process.join(timeout)
+
+    if process.is_alive():
+        LOGGER.error(f"Pair {(entity1, entity2)} timed out. Continuing...")
+        process.terminate()
+        process.join()
+    
+    return queue.get() if not queue.empty() else (timeout,0,0,0)
+
+def read_conf(filename: str):
+    with open(filename) as pairs:
+        result = list()
+        for pair in pairs.readlines():
+            if pair.startswith("#"):
+                LOGGER.info(f"Skipping {pair}...")
+                continue
+            pair_sp = pair.split(",")
+            result.append((pair_sp[0].strip(), pair_sp[1].strip()))
+        return result
 
 def execute_query(sparql: SPARQLWrapper, query: str):
     """
