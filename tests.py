@@ -8,7 +8,7 @@ from utils.logger import LOGGER
 from utils.utils import read_conf, timeout
 
 def dummy(entity1: str, entity2: str):
-    return 0,0,0,0
+    return 0,0,0,0,[]
 
 if __name__ == "__main__":
     # EXISTING = read_conf("config/pairs.conf")
