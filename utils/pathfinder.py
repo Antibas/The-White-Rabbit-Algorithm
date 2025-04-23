@@ -4,7 +4,7 @@ from SPARQLWrapper import JSON, SPARQLWrapper
 from anthropic import Anthropic
 
 from utils.constants import AGENT, BASE_URLS, CLAUDE_MODEL, RESOURCE_URLS, SPARQL_PREFIX, WIKIDATA_URL
-from utils.enums import ResourceType
+from utils.enums import EmbeddingType, ResourceType
 from utils.logger import LOGGER
 from utils.utils import claude_message, construct_query, execute_query, get_entity_similarity, is_english_only
 
@@ -34,7 +34,7 @@ def find_path(entity1: str, entity2: str, max_depth: int=15, agent: bool=False, 
     LOGGER.error("No path found within the given depth.")
     return None, None
 
-def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, llm: bool=False, agent: bool=False, resource_type: ResourceType=ResourceType.DBPEDIA):
+def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, model, llm: bool=False, agent: bool=False, resource_type: ResourceType=ResourceType.DBPEDIA, embedding_type: EmbeddingType=EmbeddingType.WIKI2VEC):
     sparql = SPARQLWrapper(endpoint, agent=AGENT) if agent else SPARQLWrapper(endpoint)
     visited = set()
     # Track visited nodes
@@ -158,7 +158,7 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, ll
                 for l in lista:
                     last_part = l.rsplit('/', 1)[-1]
                     last_part2=last_part.replace("_"," ")
-                    word_entity_sim = get_entity_similarity(si1, last_part2)
+                    word_entity_sim = get_entity_similarity(si1, last_part2, model, embedding_type=embedding_type)
 
                     LOGGER.info(f"Similarity between {si1} and {last_part2}: {word_entity_sim}")
                     if word_entity_sim is not None:
@@ -252,7 +252,7 @@ def get_wikidata_uri(label: str):
         return results["results"]["bindings"][0]["item"]["value"]
     return None
 
-def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, llm: bool=False):
+def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, model, llm: bool=False):
     sparql = SPARQLWrapper(WIKIDATA_URL,agent=AGENT)
     visited = set()
     dicta11={}
@@ -412,7 +412,7 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
                 for l in lista:
                     last_part=l
                     last_part2=dicta22[l]
-                    word_entity_sim = get_entity_similarity(si1, last_part2)
+                    word_entity_sim = get_entity_similarity(si1, last_part2, model)
                     LOGGER.info(f"Similarity between {si1} and {last_part2}: {word_entity_sim}")
                     if word_entity_sim is not None:
                         oka=oka+prf+last_part+","+str(word_entity_sim)+"#"

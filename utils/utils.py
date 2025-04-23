@@ -1,6 +1,6 @@
 from multiprocessing import Process, Queue
 from re import fullmatch
-from typing import Callable
+from typing import Any, Callable, Optional
 from SPARQLWrapper import JSON, SPARQLWrapper
 from numpy import array, dot, mean, zeros
 from numpy.linalg import norm
@@ -11,8 +11,9 @@ from utils.logger import LOGGER
 from sentence_transformers.util import cos_sim
 from sentence_transformers import SentenceTransformer
 from wikipedia2vec import Wikipedia2Vec
+from queue import Empty as QueueEmptyException
 
-def load_model(embedding_type: EmbeddingType):
+def load_model(embedding_type: EmbeddingType = EmbeddingType.WIKI2VEC):
     if embedding_type == EmbeddingType.WIKI2VEC:
         return Wikipedia2Vec.load(WIKI2VEC_MODEL)
     
@@ -29,13 +30,50 @@ def load_model(embedding_type: EmbeddingType):
 def claude_message(epel, lista, target_node):
     return f"do not insert δικους σου nodes αλλα επελεξε ακριβως {epel} αν ειναι διαθεσιμoi απο την {lista} αυτους που πλησιαζουν πιο πολυ  α΄΄΄΄λλα και αλλους που θα μπορουσαν πιο πιθανα να οδηγησουν στον κομβο {target_node} επελεξε συνολικα +{epel} και δωσε τους ενα σκορ εγγυτητας με τρια δεκαδικα. εαν δεν πλησιαζει πολυ δωσε σκορ κατω απο 0.4. Αν πλησιζει πολυ δωσε πανω απο 0.7. Επελεξε τους κομβους με τα μεγαλυτερα σκορ. Επισης μην επιλεξεις nodes που αναφερονται σε γενικες κατηγοριες αλλα μονο σε υπαρκτα entities. Return them  as string of entities. An entity is node comma score. Score is from 0.0 for irrelevant to target to 1 .if the node includes the word of the target, return as a score 1.0 .Do not comment scores.If target node is exacly found in list give it score 500.0. Final string is entity#entity#entity etc mean seperate entities with without headers # Return plain string.Αν δεν ειναι διαθεσιμοι 6 κομβοι δεν πειραζει και ΜΗΝ ΔΗΜΙΟΥΡΓΗΣΕΙΣ ΚΟΜΒΟΥΣ ΑΠΟ ΤΗΝ ΔΙΚΗ ΣΟΥ ΓΝΩΣΗ που δεν υπαρχουν στην λιστα. ΑΚΟΜΑ ΚΑΙ ΕΝΑΣ ΝΑ ΕΙΝΑΙ Ο ΚΟΜΒΟΣ ΕΠΕΣΤΡΕΨΕ ΤΟΝ"
 
-def _wrapper(func: Callable[[str, str], tuple], entity1: str, entity2: str, queue: Queue):
-    result = func(entity1, entity2)
+def worker(embedding_type: EmbeddingType, task_queue: Queue, result_queue: Queue):
+    model = load_model(embedding_type)
+    while True:
+        task = task_queue.get()
+        if task is None:  # Poison pill to shutdown
+            break
+        func, args = task
+        try:
+            result = func(model, *args)
+            result_queue.put(result)
+        except Exception as e:
+            result_queue.put(e)
+
+def timeout(func: Callable[[Any, str, str, Optional[EmbeddingType]], tuple], args: tuple, embedding_type: EmbeddingType=EmbeddingType.WIKI2VEC, timeout: int=360):
+    task_queue = Queue()
+    result_queue = Queue()
+    p = Process(target=worker, args=(embedding_type, task_queue, result_queue))
+    p.start()
+
+    task_queue.put((func, args))
+
+    try:
+        result = result_queue.get(timeout=timeout)
+    except QueueEmptyException:
+        p.terminate()
+        p.join()
+        return timeout,0,0,0,[] 
+
+    task_queue.put(None)  # Tell worker to stop
+    p.join()
+    
+    if isinstance(result, Exception):
+        raise result  # If you want to propagate errors
+
+    return result
+
+def _wrapper(func: Callable[[Any, str, str, Optional[EmbeddingType]], tuple], entity1: str, entity2: str, embedding_type: EmbeddingType, queue: Queue):
+    model = load_model(embedding_type)
+    result = func(model, entity1, entity2, embedding_type) if embedding_type is not None else func(model, entity1, entity2)
     queue.put(result)
 
-def timeout(func: Callable[[str, str], tuple], entity1: str, entity2: str, timeout: int=360):
+def timeout2(func: Callable[[Any, str, str, Optional[EmbeddingType]], tuple], entity1: str, entity2: str, embedding_type: EmbeddingType=None, timeout: int=360):
     queue = Queue()
-    process = Process(target=_wrapper, args=(func, entity1, entity2, queue))
+    process = Process(target=_wrapper, args=(func, entity1, entity2, embedding_type, queue))
     process.start()
     process.join(timeout)
 
@@ -44,7 +82,7 @@ def timeout(func: Callable[[str, str], tuple], entity1: str, entity2: str, timeo
         process.terminate()
         process.join()
     
-    return queue.get() if not queue.empty() else (timeout,0,0,0,[])
+    return queue.get() if not queue.empty() else timeout,0,0,0,[]
 
 def read_conf(filename: str):
     with open(filename) as pairs:
@@ -127,7 +165,7 @@ def get_entity_label(entity_id: str, agent: bool=False, resource_type: ResourceT
     
     return None
 
-def get_entity_similarity(entity1: str, entity2: str, embedding_type: EmbeddingType=EmbeddingType.WIKI2VEC):
+def get_entity_similarity(entity1: str, entity2: str, model, embedding_type: EmbeddingType=EmbeddingType.WIKI2VEC):
     """
     Calculate similarity between two Wikipedia entities.
     
@@ -139,12 +177,12 @@ def get_entity_similarity(entity1: str, entity2: str, embedding_type: EmbeddingT
         float: Similarity score between 0 and 1
     """
     if embedding_type == EmbeddingType.SBERT:
-        return get_sbert_similarity(entity1, entity2)
+        return get_sbert_similarity(entity1, entity2, model)
     
     if embedding_type in [EmbeddingType.FASTTEXT, EmbeddingType.WORD2VEC]:
-        return get_pretrained_similarity(entity1, entity2, embedding_type)
+        return get_pretrained_similarity(entity1, entity2, model)
     
-    model = load_model(embedding_type)
+    # model = load_model(embedding_type)
     try:
         if not entity1.strip() or not entity2.strip():
             return 0
@@ -182,19 +220,19 @@ def get_wikidata_uri(label: str):
         return results["results"]["bindings"][0]["item"]["value"]
     return None
 
-def get_embedding(name: str, embedding_type: EmbeddingType=EmbeddingType.WIKI2VEC):
-    model = load_model(embedding_type)#MODELS.WORD2VEC if embedding_type==EmbeddingType.WORD2VEC else MODELS.FASTTEXT
+def get_embedding(name: str, model):
+    # model = load_model(embedding_type)#MODELS.WORD2VEC if embedding_type==EmbeddingType.WORD2VEC else MODELS.FASTTEXT
     words = name.lower().split()
     vectors = [model[word] for word in words if word in model]
     return mean(vectors, axis=0) if vectors else zeros(300)
 
-def get_pretrained_similarity(entity1: str, entity2: str, embedding_type: EmbeddingType=EmbeddingType.WIKI2VEC):
-    embeddings = array([get_embedding(entity1, embedding_type), get_embedding(entity2, embedding_type)])
+def get_pretrained_similarity(entity1: str, entity2: str, model):
+    embeddings = array([get_embedding(entity1, model), get_embedding(entity2, model)])
     similarity = cosine_similarity(embeddings)
     return similarity[0, 1]
 
-def get_sbert_similarity(entity1: str, entity2: str):
-    model = load_model(EmbeddingType.SBERT)
+def get_sbert_similarity(entity1: str, entity2: str, model: SentenceTransformer):
+    # model = load_model(EmbeddingType.SBERT)
     embeddings = model.encode([entity1, entity2], convert_to_tensor=True)
     similarity = cos_sim(embeddings, embeddings)
     return similarity[0, 1]

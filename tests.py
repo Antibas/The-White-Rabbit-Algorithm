@@ -1,7 +1,7 @@
 from csv import writer
 from multiprocessing import Process, Queue
 from typing import Callable
-from algorithms.dbpedia import join, wiki2vec, llm
+from algorithms.dbpedia import join, embedding, llm
 
 from tests.pair_generator import create_random_pairs
 from utils.logger import LOGGER
@@ -23,8 +23,8 @@ if __name__ == "__main__":
         LOGGER.info(f"Starting pair {pair}...")
         with open("measurements/dbpedia.csv", "a", newline="") as csv:
             csv_writer = writer(csv, delimiter=",")
-            time1, length1, nn1, nt1, _ = timeout(join, pair[0], pair[1])
-            time2, length2, nn2, nt2, _ = timeout(wiki2vec, pair[0], pair[1])
+            time1, length1, nn1, nt1, _ = timeout(join, (pair[0], pair[1]))
+            time2, length2, nn2, nt2, _ = timeout(embedding, (pair[0], pair[1]))
             csv_writer.writerow([pair[0], pair[1], time1, length1, nn1, nt1, time2, length2, nn2, nt2, *dummy(*pair)])
             # time1, length1, nn1, nt1 = timeout(join, pair[0], pair[1])
             # if not length1:
