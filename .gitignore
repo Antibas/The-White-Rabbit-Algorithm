@@ -178,3 +178,4 @@ cython_debug/
 test.py
 paths15
 notes.txt
+*.gz

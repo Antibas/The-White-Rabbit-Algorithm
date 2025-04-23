@@ -11,7 +11,7 @@ def join(entity1: str, entity2: str):
     paths: list[tuple[str, str, str]] = []
     depth, results = find_path(entity1, entity2, agent=True, resource_type=ResourceType.YAGOS)
     if not results:
-        return time()-now, 0, 0, 0, []
+        return round(time()-now), 0, 0, 0, []
     triples: list[tuple[str, str, str]] = []
     data=results
     first_p_key = next(key for key in data[0].keys() if key.startswith('p'))
@@ -95,7 +95,7 @@ def embedding(entity1: str, entity2: str):
     LOGGER.info(f"Similarity between {start_node} and {target_node}: {word_entity_sim}")
     depth,path = find_path_between_nodes(start_node, target_node, YAGOS_URL, resource_type=ResourceType.YAGOS)
     if not path:
-        return time()-now, 0, 0, 0, []
+        return round(time()-now), 0, 0, 0, []
     
     # for step in path:
     #     LOGGER.info(f"{step[0]} --{step[1]}--> {step[2]}")
@@ -136,7 +136,7 @@ def llm(entity1: str, entity2: str):
     LOGGER.info(f"Similarity between {start_node} and {target_node}: {word_entity_sim}")
     depth,path = find_path_between_nodes(start_node, target_node, YAGOS_URL, resource_type=ResourceType.YAGOS, llm=True)
     if not path:
-        return time()-now, 0, 0, 0, []
+        return round(time()-now), 0, 0, 0, []
     
     # for step in path:
     #     LOGGER.info(f"{step[0]} --{step[1]}--> {step[2]}")

@@ -1,6 +1,6 @@
 from time import time
 
-from utils.enums import ResourceType
+from utils.enums import EmbeddingType, ResourceType
 from utils.logger import LOGGER
 from utils.pathfinder import find_path, find_path_between_nodes_emb_wiki
 from utils.utils import get_entity_label, get_entity_similarity, get_wikidata_uri
@@ -13,7 +13,7 @@ def join(entity1: str, entity2: str):
     depth, results = find_path(entity1, entity2, agent=True, resource_type=ResourceType.WIKIDATA)
 
     if not results:
-        return time()-now, 0, 0, 0, []
+        return round(time()-now), 0, 0, 0, []
     triples = []
     data=results
     first_p_key = next(key for key in data[0].keys() if key.startswith('p'))
@@ -87,7 +87,7 @@ def join(entity1: str, entity2: str):
     nt = totale/(float(depth))
     return round(now2-now), depth, round(nn, 2), round(nt, 2), paths
 
-def embedding(entity1: str, entity2: str):
+def embedding(entity1: str, entity2: str, embedding_type: EmbeddingType=EmbeddingType.WIKI2VEC):
     now = time()
     entity1=entity1.replace("_", " ")
     entity2=entity2.replace("_", " ")
@@ -96,7 +96,7 @@ def embedding(entity1: str, entity2: str):
     LOGGER.info(f"Similarity between {entity1} and {entity2}: {word_entity_sim}")
     depth,path = find_path_between_nodes_emb_wiki(entity1, entity2)#, resource_type=ResourceType.WIKIDATA, agent=True, emb=True)
     if not path:
-        return time()-now, 0, 0, 0, []
+        return round(time()-now), 0, 0, 0, []
     
     totalp=0
     totale=0
@@ -137,7 +137,7 @@ def llm(entity1: str, entity2: str):
     LOGGER.info(f"Similarity between {entity1} and {entity2}: {word_entity_sim}")
     depth,path = find_path_between_nodes_emb_wiki(entity1, entity2, llm=True)#, resource_type=ResourceType.WIKIDATA, agent=True, emb=True)
     if not path:
-        return time()-now, 0, 0, 0, []
+        return round(time()-now), 0, 0, 0, []
     
     totalp=0
     totale=0

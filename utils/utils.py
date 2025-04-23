@@ -2,11 +2,29 @@ from multiprocessing import Process, Queue
 from re import fullmatch
 from typing import Callable
 from SPARQLWrapper import JSON, SPARQLWrapper
-from numpy import dot
+from numpy import array, dot, mean, zeros
 from numpy.linalg import norm
-from utils.constants import AGENT, BASE_URLS, WIKI2VEC, WIKIDATA_URL
-from utils.enums import ResourceType
+from utils.constants import AGENT, BASE_URLS, SBERT_MODEL, WIKI2VEC_MODEL, WIKIDATA_URL
+from sklearn.metrics.pairwise import cosine_similarity
+from utils.enums import EmbeddingType, ResourceType
 from utils.logger import LOGGER
+from sentence_transformers.util import cos_sim
+from sentence_transformers import SentenceTransformer
+from wikipedia2vec import Wikipedia2Vec
+
+def load_model(embedding_type: EmbeddingType):
+    if embedding_type == EmbeddingType.WIKI2VEC:
+        return Wikipedia2Vec.load(WIKI2VEC_MODEL)
+    
+    if embedding_type == EmbeddingType.SBERT:
+        return SentenceTransformer(SBERT_MODEL)
+    
+    if embedding_type == EmbeddingType.WORD2VEC:
+        from word2vec import load_data
+    else:
+        from fasttext import load_data
+    
+    return load_data()
 
 def claude_message(epel, lista, target_node):
     return f"do not insert δικους σου nodes αλλα επελεξε ακριβως {epel} αν ειναι διαθεσιμoi απο την {lista} αυτους που πλησιαζουν πιο πολυ  α΄΄΄΄λλα και αλλους που θα μπορουσαν πιο πιθανα να οδηγησουν στον κομβο {target_node} επελεξε συνολικα +{epel} και δωσε τους ενα σκορ εγγυτητας με τρια δεκαδικα. εαν δεν πλησιαζει πολυ δωσε σκορ κατω απο 0.4. Αν πλησιζει πολυ δωσε πανω απο 0.7. Επελεξε τους κομβους με τα μεγαλυτερα σκορ. Επισης μην επιλεξεις nodes που αναφερονται σε γενικες κατηγοριες αλλα μονο σε υπαρκτα entities. Return them  as string of entities. An entity is node comma score. Score is from 0.0 for irrelevant to target to 1 .if the node includes the word of the target, return as a score 1.0 .Do not comment scores.If target node is exacly found in list give it score 500.0. Final string is entity#entity#entity etc mean seperate entities with without headers # Return plain string.Αν δεν ειναι διαθεσιμοι 6 κομβοι δεν πειραζει και ΜΗΝ ΔΗΜΙΟΥΡΓΗΣΕΙΣ ΚΟΜΒΟΥΣ ΑΠΟ ΤΗΝ ΔΙΚΗ ΣΟΥ ΓΝΩΣΗ που δεν υπαρχουν στην λιστα. ΑΚΟΜΑ ΚΑΙ ΕΝΑΣ ΝΑ ΕΙΝΑΙ Ο ΚΟΜΒΟΣ ΕΠΕΣΤΡΕΨΕ ΤΟΝ"
@@ -109,7 +127,7 @@ def get_entity_label(entity_id: str, agent: bool=False, resource_type: ResourceT
     
     return None
 
-def get_entity_similarity(entity1: str, entity2: str):
+def get_entity_similarity(entity1: str, entity2: str, embedding_type: EmbeddingType=EmbeddingType.WIKI2VEC):
     """
     Calculate similarity between two Wikipedia entities.
     
@@ -120,14 +138,19 @@ def get_entity_similarity(entity1: str, entity2: str):
     Returns:
         float: Similarity score between 0 and 1
     """
+    if embedding_type == EmbeddingType.SBERT:
+        return get_sbert_similarity(entity1, entity2)
+    
+    if embedding_type in [EmbeddingType.FASTTEXT, EmbeddingType.WORD2VEC]:
+        return get_pretrained_similarity(entity1, entity2, embedding_type)
+    
+    model = load_model(embedding_type)
     try:
-        LOGGER.debug(F"{entity1=}")
-        LOGGER.debug(F"{entity2=}")
         if not entity1.strip() or not entity2.strip():
             return 0
         # Get entity embeddings
-        entity1_vec = WIKI2VEC.get_entity_vector(entity1.strip())
-        entity2_vec = WIKI2VEC.get_entity_vector(entity2.strip())
+        entity1_vec = model.get_entity_vector(entity1.strip())
+        entity2_vec = model.get_entity_vector(entity2.strip())
         
         # Calculate cosine similarity
         similarity: float = dot(entity1_vec, entity2_vec) / (
@@ -158,3 +181,20 @@ def get_wikidata_uri(label: str):
     if results["results"]["bindings"]:
         return results["results"]["bindings"][0]["item"]["value"]
     return None
+
+def get_embedding(name: str, embedding_type: EmbeddingType=EmbeddingType.WIKI2VEC):
+    model = load_model(embedding_type)#MODELS.WORD2VEC if embedding_type==EmbeddingType.WORD2VEC else MODELS.FASTTEXT
+    words = name.lower().split()
+    vectors = [model[word] for word in words if word in model]
+    return mean(vectors, axis=0) if vectors else zeros(300)
+
+def get_pretrained_similarity(entity1: str, entity2: str, embedding_type: EmbeddingType=EmbeddingType.WIKI2VEC):
+    embeddings = array([get_embedding(entity1, embedding_type), get_embedding(entity2, embedding_type)])
+    similarity = cosine_similarity(embeddings)
+    return similarity[0, 1]
+
+def get_sbert_similarity(entity1: str, entity2: str):
+    model = load_model(EmbeddingType.SBERT)
+    embeddings = model.encode([entity1, entity2], convert_to_tensor=True)
+    similarity = cos_sim(embeddings, embeddings)
+    return similarity[0, 1]
