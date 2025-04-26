@@ -177,7 +177,7 @@ def get_entity_similarity(entity1: str, entity2: str, model, embedding_type: Emb
         float: Similarity score between 0 and 1
     """
     if embedding_type == EmbeddingType.SBERT:
-        return get_sbert_similarity(entity1, entity2, model)
+        return float(get_sbert_similarity(entity1, entity2, model))
     
     if embedding_type in [EmbeddingType.FASTTEXT, EmbeddingType.WORD2VEC]:
         return get_pretrained_similarity(entity1, entity2, model)

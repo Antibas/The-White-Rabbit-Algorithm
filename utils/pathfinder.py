@@ -252,7 +252,7 @@ def get_wikidata_uri(label: str):
         return results["results"]["bindings"][0]["item"]["value"]
     return None
 
-def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, model, llm: bool=False):
+def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, model, llm: bool=False, embedding_type: EmbeddingType=EmbeddingType.WIKI2VEC):
     sparql = SPARQLWrapper(WIKIDATA_URL,agent=AGENT)
     visited = set()
     dicta11={}
@@ -296,14 +296,14 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
         if current_node[0] == target_node or (not llm and result2 in target_node):
             path=path + [(current_node, "reached", target_node)]
             
-            for step in path:
-                # LOGGER.info(f"{step[0]} --{step[1]}--> {step[2]}")
+            # for step in path:
+            #     # LOGGER.info(f"{step[0]} --{step[1]}--> {step[2]}")
                 
-                aka1=step[0][0]
-                aka2=step[1]
-                aka3=step[2][0]
-                # if "reached" not in aka2:
-                #     LOGGER.info(f"{dicta22[aka1]} -- {dicta33[aka2]}--> {dicta22[aka3]} ")
+            #     aka1=step[0][0]
+            #     aka2=step[1]
+            #     aka3=step[2][0]
+            #     # if "reached" not in aka2:
+            #     #     LOGGER.info(f"{dicta22[aka1]} -- {dicta33[aka2]}--> {dicta22[aka3]} ")
 
             return len(path)-1, path
 
@@ -412,7 +412,7 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
                 for l in lista:
                     last_part=l
                     last_part2=dicta22[l]
-                    word_entity_sim = get_entity_similarity(si1, last_part2, model)
+                    word_entity_sim = get_entity_similarity(si1, last_part2, model, embedding_type=embedding_type)
                     LOGGER.info(f"Similarity between {si1} and {last_part2}: {word_entity_sim}")
                     if word_entity_sim is not None:
                         oka=oka+prf+last_part+","+str(word_entity_sim)+"#"

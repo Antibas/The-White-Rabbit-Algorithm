@@ -1,11 +1,12 @@
 from time import time
 
+from utils.constants import ACCEPTANCE_THRESHOLD
 from utils.enums import EmbeddingType, ResourceType
 from utils.logger import LOGGER
 from utils.pathfinder import find_path, find_path_between_nodes_emb_wiki
 from utils.utils import get_entity_label, get_entity_similarity, get_wikidata_uri
 
-def join(entity1: str, entity2: str):
+def join(model, entity1: str, entity2: str):
     now = time()
     paths: list[tuple[str, str, str]] = []
     entity1=get_wikidata_uri(entity1.replace("_", " "))
@@ -14,12 +15,14 @@ def join(entity1: str, entity2: str):
 
     if not results:
         return round(time()-now), 0, 0, 0, []
+    
     triples = []
     data=results
     first_p_key = next(key for key in data[0].keys() if key.startswith('p'))
 
     # Find the last 'p' key (e.g., p5, p10, etc.)
     last_p_key = next(key for key in reversed(data[0].keys()) if key.startswith('p'))
+    
     # Find the first 'x' key (e.g., x1)
     first_x_key = next(key for key in data[0].keys() if key.startswith('x'))
     
@@ -55,56 +58,72 @@ def join(entity1: str, entity2: str):
     xa0=get_entity_label(entity1, agent=True, resource_type=ResourceType.WIKIDATA).replace("_"," ").replace("-"," ")
     xa1=get_entity_label(first_x_value, agent=True, resource_type=ResourceType.WIKIDATA).replace("_"," ").replace("-"," ")
 
-    word_entity_similarity = get_entity_similarity(xa0, xa1)
+    word_entity_similarity = get_entity_similarity(xa0, xa1, model)
     totalp+= word_entity_similarity
     
 
     LOGGER.info(f"Similarity between {xa0} and {xa1}: {word_entity_similarity}")
+    if word_entity_similarity >= ACCEPTANCE_THRESHOLD:
+        return round(now2-now), depth, round(totalp, 2), round(totale, 2), paths
+    
+    counter = 1
     for triple in triples:
-        # LOGGER.info(f"({triple[0]}, {triple[1]}, {triple[2]})")
         xa0=get_entity_label(triple[0], agent=True, resource_type=ResourceType.WIKIDATA).replace("_"," ").replace("-"," ")
         xa1=get_entity_label(triple[2], agent=True, resource_type=ResourceType.WIKIDATA).replace("_"," ").replace("-"," ")
-        word_entity_similarity = get_entity_similarity(xa0, xa1)
+        
+        word_entity_similarity = get_entity_similarity(xa0, xa1, model)
         totalp+= word_entity_similarity
+        
         xa2=get_entity_label(entity2, agent=True, resource_type=ResourceType.WIKIDATA).replace("_"," ").replace("-"," ")
-    
-        word_entity_similarity2 = get_entity_similarity(xa0, xa2)
+        word_entity_similarity2 = get_entity_similarity(xa0, xa2, model)
         totale+= word_entity_similarity2
         LOGGER.info(f"Similarity between {get_entity_label(triple[0], agent=True, resource_type=ResourceType.WIKIDATA)} and {get_entity_label(triple[2], agent=True, resource_type=ResourceType.WIKIDATA)}: {word_entity_similarity}")
+        
+        counter += 1
         paths.append(triple)
+
+        if word_entity_similarity >= ACCEPTANCE_THRESHOLD:
+            nn = totalp/(float(counter))
+            nt = totale/(float(counter))
+            return round(now2-now), counter, round(nn, 2), round(nt, 2), paths
+
 
     paths.append((last_x_value, last_p_value, entity2))
     xa3=get_entity_label(last_x_value, agent=True, resource_type=ResourceType.WIKIDATA).replace("_"," ").replace("-"," ")
     xa4=get_entity_label(entity2, agent=True, resource_type=ResourceType.WIKIDATA).replace("_"," ").replace("-"," ")
 
-    word_entity_similarity = get_entity_similarity(xa3, xa4)
+    word_entity_similarity = get_entity_similarity(xa3, xa4, model)
     totalp+= word_entity_similarity
 
-    word_entity_similarity2 = get_entity_similarity(xa3,xa4)
+    word_entity_similarity2 = get_entity_similarity(xa3, xa4, model)
     totale+= word_entity_similarity2
     LOGGER.info(f"Similarity between {xa3} and {xa4}: {word_entity_similarity}   {word_entity_similarity2}")
     nn = totalp/(float(depth))
     nt = totale/(float(depth))
     return round(now2-now), depth, round(nn, 2), round(nt, 2), paths
 
-def embedding(entity1: str, entity2: str, embedding_type: EmbeddingType=EmbeddingType.WIKI2VEC):
+def embedding(model, entity1: str, entity2: str, embedding_type: EmbeddingType=EmbeddingType.WIKI2VEC):
     now = time()
     entity1=entity1.replace("_", " ")
     entity2=entity2.replace("_", " ")
 
-    word_entity_sim = get_entity_similarity(entity1, entity2)
+    word_entity_sim = get_entity_similarity(entity1, entity2, model, embedding_type)
     LOGGER.info(f"Similarity between {entity1} and {entity2}: {word_entity_sim}")
-    depth,path = find_path_between_nodes_emb_wiki(entity1, entity2)#, resource_type=ResourceType.WIKIDATA, agent=True, emb=True)
+    if word_entity_sim >= ACCEPTANCE_THRESHOLD:
+        return round(time()-now), 1, word_entity_sim, word_entity_sim, [(entity1, "", entity2)]
+    
+    counter = 1
+    depth,path = find_path_between_nodes_emb_wiki(entity1, entity2, model, embedding_type=embedding_type)#, resource_type=ResourceType.WIKIDATA, agent=True, emb=True)
     if not path:
         return round(time()-now), 0, 0, 0, []
     
     totalp=0
     totale=0
     now2 = time()
+
     lana=len(path)
     ida=1
     for triple in path:
-        # LOGGER.info(f"({triple[0]}, {triple[1]}, {triple[2]})")
         xa0= triple[0][0].rsplit('/', 1)[-1]
         xa2= triple[2][0].rsplit('/', 1)[-1]
         xa0=get_entity_label(triple[0][0], agent=True, resource_type=ResourceType.WIKIDATA)
@@ -115,37 +134,48 @@ def embedding(entity1: str, entity2: str, embedding_type: EmbeddingType=Embeddin
         xa3=entity2
         xa3=xa3.replace("_"," ").replace("-",' ')
     
-        word_entity_similarity = get_entity_similarity(xa0, xa2)
+        word_entity_similarity = get_entity_similarity(xa0, xa2, model, embedding_type)
         totalp+= word_entity_similarity
     
-        word_entity_similarity2 = get_entity_similarity(xa0, xa3)
+        word_entity_similarity2 = get_entity_similarity(xa0, xa3, model, embedding_type)
         totale+= word_entity_similarity2
         LOGGER.info(f"Similarity between {xa0} and {xa2}: {word_entity_similarity} {word_entity_similarity2} ")
         ida=ida+1
         if ida==lana:
             break
+
+        counter+=1
+        if word_entity_similarity >= ACCEPTANCE_THRESHOLD:
+            nn = totalp/(float(counter))
+            nt = totale/(float(counter))
+            return round(now2-now), counter, round(nn, 2), round(nt, 2), path
+        
     nn = totalp/(float(depth))
     nt = totale/(float(depth))
     return round(now2-now), depth, round(nn, 2), round(nt, 2), path
 
-def llm(entity1: str, entity2: str):
+def llm(model, entity1: str, entity2: str):
     now = time()
     entity1=entity1.replace("_", " ")
     entity2=entity2.replace("_", " ")
-
-    word_entity_sim = get_entity_similarity(entity1, entity2)
+    word_entity_sim = get_entity_similarity(entity1, entity2, model)
+    
     LOGGER.info(f"Similarity between {entity1} and {entity2}: {word_entity_sim}")
-    depth,path = find_path_between_nodes_emb_wiki(entity1, entity2, llm=True)#, resource_type=ResourceType.WIKIDATA, agent=True, emb=True)
+    if word_entity_sim >= ACCEPTANCE_THRESHOLD:
+        return round(time()-now), 1, word_entity_sim, word_entity_sim, [(entity1, "", entity2)]
+    
+    counter = 1
+    depth,path = find_path_between_nodes_emb_wiki(entity1, entity2, model, llm=True)#, resource_type=ResourceType.WIKIDATA, agent=True, emb=True)
     if not path:
         return round(time()-now), 0, 0, 0, []
     
     totalp=0
     totale=0
     now2 = time()
+
     lana=len(path)
     ida=1
     for triple in path:
-        # LOGGER.info(f"({triple[0]}, {triple[1]}, {triple[2]})")
         xa0= triple[0][0].rsplit('/', 1)[-1]
         xa2= triple[2][0].rsplit('/', 1)[-1]
         xa0=get_entity_label(triple[0][0], agent=True, resource_type=ResourceType.WIKIDATA)
@@ -156,15 +186,22 @@ def llm(entity1: str, entity2: str):
         xa3=entity2
         xa3=xa3.replace("_"," ").replace("-",' ')
     
-        word_entity_similarity = get_entity_similarity(xa0, xa2)
+        word_entity_similarity = get_entity_similarity(xa0, xa2, model)
         totalp+= word_entity_similarity
     
-        word_entity_similarity2 = get_entity_similarity(xa0, xa3)
+        word_entity_similarity2 = get_entity_similarity(xa0, xa3, model)
         totale+= word_entity_similarity2
         LOGGER.info(f"Similarity between {xa0} and {xa2}: {word_entity_similarity} {word_entity_similarity2} ")
         ida=ida+1
         if ida==lana:
             break
+        
+        counter+=1
+        if word_entity_similarity >= ACCEPTANCE_THRESHOLD:
+            nn = totalp/(float(counter))
+            nt = totale/(float(counter))
+            return round(now2-now), counter, round(nn, 2), round(nt, 2), path
+    
     nn = totalp/(float(depth))
     nt = totale/(float(depth))
     return round(now2-now), depth, round(nn, 2), round(nt, 2), path

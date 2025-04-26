@@ -10,8 +10,10 @@ def join(model, entity1: str, entity2: str):
     now = time()
     paths: list[tuple[str, str, str]] = []
     depth, results = find_path(entity1, entity2)
+
     if not results:
         return round(time()-now), 0, 0, 0, []
+    
     triples: list[tuple[str, str, str]] = []
     data=results
     first_p_key = next(key for key in data[0].keys() if key.startswith('p'))
@@ -30,6 +32,7 @@ def join(model, entity1: str, entity2: str):
     last_p_value = data[0][last_p_key]['value']
     first_x_value = data[0][first_x_key]['value']
     last_x_value = data[0][last_x_key]['value']
+
     for entry in data:
         # Iterate over the 'x' and 'p' pairs and form the desired triples
         for i in range(1, len(entry)//2):  # Skip p0
@@ -189,6 +192,7 @@ def llm(model, entity1: str, entity2: str):
             nn = totalp/(float(counter))
             nt = totale/(float(counter))
             return round(now2-now), counter, round(nn, 2), round(nt, 2), path
+    
     nn = totalp/(float(depth))
     nt = totale/(float(depth))
     return round(now2-now), depth, round(nn, 2), round(nt, 2), path

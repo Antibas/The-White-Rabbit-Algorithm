@@ -4,6 +4,7 @@ from typing import Callable
 from algorithms.dbpedia import join, embedding, llm
 
 from tests.pair_generator import create_random_pairs
+from utils.enums import EmbeddingType
 from utils.logger import LOGGER
 from utils.utils import read_conf, timeout
 
@@ -21,11 +22,20 @@ if __name__ == "__main__":
     # counter = 0
     for pair in PAIRS:
         LOGGER.info(f"Starting pair {pair}...")
-        with open("measurements/dbpedia.csv", "a", newline="") as csv:
+        with open("measurements/dbpedia2.csv", "a", newline="") as csv:
             csv_writer = writer(csv, delimiter=",")
-            time1, length1, nn1, nt1, _ = timeout(join, (pair[0], pair[1]))
-            time2, length2, nn2, nt2, _ = timeout(embedding, (pair[0], pair[1]))
-            csv_writer.writerow([pair[0], pair[1], time1, length1, nn1, nt1, time2, length2, nn2, nt2, *dummy(*pair)])
+            row = [pair[0], pair[1]]
+            for embedding_type in [EmbeddingType.WORD2VEC, EmbeddingType.FASTTEXT, EmbeddingType.SBERT]:
+                row+= list(timeout(embedding, (pair[0], pair[1], embedding_type), embedding_type=embedding_type, timeout=400))[0:4]
+                # row+=list(dummy(pair[0], pair[1]))[0:4]
+            csv_writer.writerow(row)
+            # print(row)
+            # time1, length1, nn1, nt1, _ = timeout(join, (pair[0], pair[1]))
+            # time2, length2, nn2, nt2, _ = timeout(embedding, (pair[0], pair[1]), embedding_type=embedding_type)
+            # csv_writer.writerow([pair[0], pair[1], 
+            #                      *timeout(embedding, (pair[0], pair[1], EmbeddingType.WORD2VEC), embedding_type=EmbeddingType.WORD2VEC), 
+            #                      *timeout(embedding, (pair[0], pair[1], EmbeddingType.FASTTEXT), embedding_type=EmbeddingType.FASTTEXT), 
+            #                      *timeout(embedding, (pair[0], pair[1], EmbeddingType.SBERT), embedding_type=EmbeddingType.SBERT)])
             # time1, length1, nn1, nt1 = timeout(join, pair[0], pair[1])
             # if not length1:
             #     LOGGER.info(f"Skipping pair {pair} as it got a timeout...")
