@@ -1,7 +1,7 @@
 from csv import writer
 from multiprocessing import Process, Queue
 from typing import Callable
-from algorithms.dbpedia import join, embedding, llm
+from algorithms.wikidata import join, embedding, llm
 
 from tests.pair_generator import create_random_pairs
 from utils.enums import EmbeddingType
@@ -22,7 +22,7 @@ if __name__ == "__main__":
     # counter = 0
     for pair in PAIRS:
         LOGGER.info(f"Starting pair {pair}...")
-        with open("measurements/dbpedia2.csv", "a", newline="") as csv:
+        with open("measurements/wikidata2.csv", "a", newline="") as csv:
             csv_writer = writer(csv, delimiter=",")
             row = [pair[0], pair[1]]
             for embedding_type in [EmbeddingType.WORD2VEC, EmbeddingType.FASTTEXT, EmbeddingType.SBERT]:
