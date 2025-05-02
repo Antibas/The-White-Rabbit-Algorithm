@@ -31,7 +31,7 @@ Examilia,Ano Liosia,8,4,0.32,0.48,360,0,0,0,0,0,0,0
 Rome,Sarajevo,1,1,0.77,0.45,10,9,0.65,0.56,0,0,0,0
 Battle of Dunkirk,Unix,130,6,0.46,0.25,52,27,0.63,0.42,0,0,0,0
 Amish,Commodore_Amiga,360,0,0,0,360,0,0,0,0,0,0,0
-,,,,,,,,,,,
+LLM,,,,,,,,,,,
 Hanoi,The_Beatles,0,0,0,0,0,0,0,0,360,0,0,0
 Heraklion,Montevideo,0,0,0,0,0,0,0,0,360,0,0,0
 Albert_Einstein,Moscow,0,0,0,0,0,0,0,0,42,4,0.34,0.28
@@ -61,3 +61,34 @@ Examilia,Ano_Liosia,0,0,0,0,0,0,0,0,360,0,0,0
 Rome,Sarajevo,0,0,0,0,0,0,0,0,360,0,0,0
 Battle_of_Dunkirk,Unix,0,0,0,0,0,0,0,0,360,0,0,0
 Amish,Commodore_Amiga,0,0,0,0,0,0,0,0,360,0,0,0
+90 Acc,,,,,,,,,,,
+Athens,Moscow,2,1,0.0,0.0,3,1,0.48,0.48
+Hanoi,The_Beatles,31,3,0.12,0.06,166,8,0.65,0.32
+Hanoi,Barcelona,1,1,0.82,0.46,5,3,0.56,0.49
+Heraklion,Montevideo,1,2,0.6,0.42,28,5,0.59,0.54
+Albert_Einstein,Moscow,1,1,0.81,0.47,3,1,0.35,0.17
+Microsoft,Crete,17,3,0.15,0.29,55,9,0.64,0.57
+Marie_Curie,Nigeria,1,1,0.0,0.0,8,3,0.48,0.46
+Adolf_Hitler,Nicaragua,1,2,0.67,0.32,8,5,0.69,0.57
+Battle_of_France,Amstrad,360,0,0,0,230,6,0.34,0.2
+Italy,Mona_Lisa,68,3,0.0,0.0,35,9,0.58,0.51
+Napoleon,Alexander_the_Great,3,1,0.43,0.22,56,11,0.67,0.58
+Smiljan,Elon_Musk,52,4,0.54,0.24,186,6,0.5,0.23
+Mahatma_Gandhi,Barack_Obama,1,1,0.86,0.42,10,2,0.43,0.44
+Nikola_Tesla,Google,3,2,0.72,0.4,15,3,0.48,0.36
+The_Flintstones,Family_Guy,42,4,0.36,0.4,23,7,0.58,0.5
+Albert_Einstein,India,1,1,1.03,0.44,4,2,0.34,0.32
+Plato,Martin_Luther_King_Jr.,67,4,0.0,0.0,161,3,0.58,0.2
+Finland,NATO,1,1,0.0,0.0,3,1,0.36,0.36
+Austria,Adolf_Hitler,10,2,0.64,0.36,6,4,0.65,0.55
+Mona_Lisa,California,2,2,0.54,0.37,18,5,0.56,0.4
+Kyriakos_Mitsotakis,Winston_Churchill,4,3,0.29,0.2,29,15,0.69,0.47
+Herne_Bay_High_School,Paris,1,2,0.71,0.4,6,4,0.58,0.2
+Boris_Yeltsin,China,6,0,0,0,360,0,0,0
+Heraklion,Artificial_intelligence,360,0,0,0,360,0,0,0
+Stephen_Hawking,Ludwig_van_Beethoven,2,2,0.0,0.0,30,11,0.67,0.57
+California,Vikings,44,4,0.14,0.13,45,3,0.5,0.18
+Examilia,Ano_Liosia,6,4,0.32,0.48,360,0,0,0
+Rome,Sarajevo,1,1,0.77,0.45,12,4,0.54,0.41
+Battle_of_Dunkirk,Unix,56,4,0.59,0.45,42,6,0.42,0.21
+Amish,Commodore_Amiga,360,0,0,0,328,29,0.61,0.34
