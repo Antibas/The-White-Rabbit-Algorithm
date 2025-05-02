@@ -31,7 +31,7 @@ Battle_of_Dunkirk,Unix,355.88781356811523,0,0,0,360,0,0,0,0,0,0,0
 Italy,Mona_Lisa,37,9,0.27,0.19,360,0,0,0,0,0,0,0
 Smiljan,Elon_Musk,68,7,0.61,0.41,360,0,0,0,0,0,0,0
 Amish,Commodore_Amiga,256.75493240356445,0,0,0,360,0,0,0,0,0,0,0
-,,,,,,,,,,,
+LLM,,,,,,,,,,,
 Athens,Moscow,0,0,0,0,0,0,0,0,39,7,0.54,0.33
 Microsoft,Crete,0,0,0,0,0,0,0,0,117,16,0.48,0.36
 Italy,Mona_Lisa,0,0,0,0,0,0,0,0,360,0,0,0
@@ -57,7 +57,7 @@ Kyriakos_Mitsotakis,Winston_Churchill,0,0,0,0,0,0,0,0,65,11,0.63,0.43
 Herne_Bay_High_School,Paris,0,0,0,0,0,0,0,0,32,7,0.24,0.27
 Examilia,Ano_Liosia,0,0,0,0,0,0,0,0,33,7,0.59,0.59
 Battle_of_Dunkirk,Unix,0,0,0,0,0,0,0,0,360,0,0,0
-,,,,,,,,,,,
+95 Acc Failed,,,,,,,,,,,
 Battle_of_France,Amstrad,39,8,0.31,0.31,360,0,0,0,0,0,0,0
 Italy,Mona_Lisa,9,9,0.27,0.19,360,0,0,0,0,0,0,0
 Smiljan,Elon_Musk,20,7,0.61,0.41,360,0,0,0,0,0,0,0
@@ -70,3 +70,35 @@ California,Vikings,9,6,0.52,0.37,360,0,0,0,0,0,0,0
 Rome,Sarajevo,2,5,0.37,0.23,14,6,0.55,0.46,0,0,0,0
 Battle_of_Dunkirk,Unix,286,14,0.59,0.28,109,22,0.67,0.36,0,0,0,0
 Amish,Commodore_Amiga,242,0,0,0,178,5,0.61,0.22,0,0,0,0
+90 Acc,,,,,,,,,,,
+Athens,Moscow,40,4,0.26,0.29,201,6,0.65,0.42
+Hanoi,The_Beatles,60,0,0,0,3,0,0,0
+Hanoi,Barcelona,140,0,0,0,360,0,0,0
+Heraklion,Montevideo,360,0,0,0,263,13,0.59,0.48
+Albert_Einstein,Moscow,9,3,0.43,0.34,85,8,0.59,0.43
+Microsoft,Crete,350,8,0.59,0.41,360,0,0,0
+Marie_Curie,Nigeria,23,4,0.43,0.22,360,0,0,0
+Adolf_Hitler,Nicaragua,52,5,0.38,0.23,161,10,0.57,0.39
+Battle_of_France,Amstrad,169,12,0.47,0.26,360,0,0,0
+Italy,Mona_Lisa,100,0,0,0,360,0,0,0
+Napoleon,Alexander_the_Great,29,7,0.62,0.38,250,21,0.72,0.55
+Smiljan,Elon_Musk,123,0,0,0,360,0,0,0
+Mahatma_Gandhi,Barack_Obama,124,9,0.34,0.44,3,0,0,0
+Nikola_Tesla,Google,126,11,0.48,0.47,3,0,0,0
+The_Flintstones,Family_Guy,57,5,0.66,0.54,360,0,0,0
+Albert_Einstein,India,83,5,0.58,0.37,66,9,0.39,0.38
+Plato,Martin_Luther_King_Jr.,48,0,0,0,3,0,0,0
+Finland,NATO,108,0,0,0,360,0,0,0
+Austria,Adolf_Hitler,15,3,0.18,0.3,5,0,0,0
+Mona_Lisa,California,40,0,0,0,360,0,0,0
+Kyriakos_Mitsotakis,Winston_Churchill,61,5,0.61,0.4,3,0,0,0
+Herne_Bay_High_School,Paris,71,0,0,0,360,0,0,0
+Boris_Yeltsin,China,86,0,0,0,3,0,0,0
+Heraklion,Artificial_intelligence,118,0,0,0,360,0,0,0
+Stephen_Hawking,Ludwig_van_Beethoven,60,5,0.29,0.19,360,0,0,0
+Indonesia,Java_(programming_language),32,7,0.69,0.64,234,5,0.66,0.46
+California,Vikings,50,0,0,0,3,0,0,0
+Examilia,Ano_Liosia,16,5,0.4,0.54,360,0,0,0
+Rome,Sarajevo,73,0,0,0,50,6,0.55,0.46
+Battle_of_Dunkirk,Unix,110,0,0,0,3,0,0,0
+Amish,Commodore_Amiga,124,0,0,0,3,0,0,0

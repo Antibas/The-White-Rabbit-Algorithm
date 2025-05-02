@@ -1,4 +1,5 @@
 ,,WORD2VEC,,,FASTTEXT,,,SBERT,,,
+Source Node,Target Node,time,length,nn,nt,time,length,nn,nt,time,length,nn,nt
 Athens,Moscow,15,7,0.57,0.5,4,6,0.73,0.63,50,7,0.74,0.56
 Hanoi,The_Beatles,400,0,0,0,400,0,0,0,400,0,0,0
 Hanoi,Barcelona,400,0,0,0,122,12,0.61,0.5,400,0,0,0

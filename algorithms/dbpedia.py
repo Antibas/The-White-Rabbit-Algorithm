@@ -1,12 +1,12 @@
 from time import time
 
-from utils.constants import ACCEPTANCE_THRESHOLD, DBPEDIA_RESOURCE_URL, DBPEDIA_URL
+from utils.constants import DBPEDIA_RESOURCE_URL, DBPEDIA_URL
 from utils.enums import EmbeddingType
 from utils.logger import LOGGER
 from utils.pathfinder import find_path, find_path_between_nodes
 from utils.utils import get_entity_similarity
 
-def join(model, entity1: str, entity2: str):
+def join(model, entity1: str, entity2: str, acceptance_threshold: float=1.0):
     now = time()
     paths: list[tuple[str, str, str]] = []
     depth, results = find_path(entity1, entity2)
@@ -62,7 +62,7 @@ def join(model, entity1: str, entity2: str):
     totale+= word_entity_similarity2
 
     LOGGER.info(f"Similarity between {entity1} and {xa2}: {word_entity_similarity}")
-    if word_entity_similarity >= ACCEPTANCE_THRESHOLD:
+    if word_entity_similarity >= acceptance_threshold:
         return round(now2-now), depth, round(totalp, 2), round(totale, 2), paths
     
     counter = 1
@@ -80,7 +80,7 @@ def join(model, entity1: str, entity2: str):
         counter += 1
         paths.append(triple)
 
-        if word_entity_similarity >= ACCEPTANCE_THRESHOLD:
+        if word_entity_similarity >= acceptance_threshold:
             nn = totalp/(float(counter))
             nt = totale/(float(counter))
             return round(now2-now), counter, round(nn, 2), round(nt, 2), paths
@@ -99,14 +99,14 @@ def join(model, entity1: str, entity2: str):
     nt = totale/(float(depth))
     return round(now2-now), depth, round(nn, 2), round(nt, 2), paths
 
-def embedding(model, entity1: str, entity2: str, embedding_type: EmbeddingType=EmbeddingType.WIKI2VEC):
+def embedding(model, entity1: str, entity2: str, embedding_type: EmbeddingType=EmbeddingType.WIKI2VEC, acceptance_threshold: float=1.0):
     start_node=f"{DBPEDIA_RESOURCE_URL}/{entity1}"
     target_node=f"{DBPEDIA_RESOURCE_URL}/{entity2}"
     now = time()
     word_entity_sim = get_entity_similarity(entity1, entity2, model, embedding_type)
     
     LOGGER.info(f"Similarity between {start_node} and {target_node}: {word_entity_sim}")
-    if word_entity_sim >= ACCEPTANCE_THRESHOLD:
+    if word_entity_sim >= acceptance_threshold:
         return round(time()-now), 1, word_entity_sim, word_entity_sim, [(start_node, "", target_node)]
     
     counter = 1
@@ -139,7 +139,7 @@ def embedding(model, entity1: str, entity2: str, embedding_type: EmbeddingType=E
             break
         
         counter+=1
-        if word_entity_similarity >= ACCEPTANCE_THRESHOLD:
+        if word_entity_similarity >= acceptance_threshold:
             nn = totalp/(float(counter))
             nt = totale/(float(counter))
             return round(now2-now), counter, round(nn, 2), round(nt, 2), path
@@ -148,14 +148,14 @@ def embedding(model, entity1: str, entity2: str, embedding_type: EmbeddingType=E
     nt = totale/(float(depth))
     return round(now2-now), depth, round(nn, 2), round(nt, 2), path
 
-def llm(model, entity1: str, entity2: str):
+def llm(model, entity1: str, entity2: str, acceptance_threshold: float=1.0):
     start_node=f"{DBPEDIA_RESOURCE_URL}/{entity1}"
     target_node=f"{DBPEDIA_RESOURCE_URL}/{entity2}"
     now = time()
     word_entity_sim = get_entity_similarity(entity1, entity2, model)
     
     LOGGER.info(f"Similarity between {start_node} and {target_node}: {word_entity_sim}")
-    if word_entity_sim >= ACCEPTANCE_THRESHOLD:
+    if word_entity_sim >= acceptance_threshold:
         return round(time()-now), 1, word_entity_sim, word_entity_sim, [(start_node, "", target_node)]
     
     counter = 1
@@ -188,7 +188,7 @@ def llm(model, entity1: str, entity2: str):
             break
         
         counter+=1
-        if word_entity_similarity >= ACCEPTANCE_THRESHOLD:
+        if word_entity_similarity >= acceptance_threshold:
             nn = totalp/(float(counter))
             nt = totale/(float(counter))
             return round(now2-now), counter, round(nn, 2), round(nt, 2), path

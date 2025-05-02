@@ -1,7 +1,7 @@
 from csv import writer
 from multiprocessing import Process, Queue
 from typing import Callable
-from algorithms.yagos import join, embedding, llm
+from algorithms.dbpedia import join, embedding, llm
 
 from tests.pair_generator import create_random_pairs
 from utils.enums import EmbeddingType
@@ -23,11 +23,13 @@ if __name__ == "__main__":
     for pair in PAIRS:
         try:
             LOGGER.info(f"Starting pair {pair}...")
-            with open("measurements/yagos2.csv", "a", newline="") as csv:
+            with open("measurements/dbpedia.csv", "a", newline="") as csv:
                 csv_writer = writer(csv, delimiter=",")
                 row = [pair[0], pair[1]]
-                for embedding_type in [EmbeddingType.WORD2VEC, EmbeddingType.FASTTEXT, EmbeddingType.SBERT]:
-                    row+= list(timeout(embedding, (pair[0], pair[1], embedding_type), embedding_type=embedding_type, timeout=400))[0:4]
+                row+=timeout(join, (pair[0], pair[1], .9))[0:4]
+                row+=timeout(embedding, (pair[0], pair[1], EmbeddingType.WIKI2VEC, .9))[0:4]
+                # for embedding_type in [EmbeddingType.WORD2VEC, EmbeddingType.FASTTEXT, EmbeddingType.SBERT]:
+                #     row+= list(timeout(embedding, (pair[0], pair[1], embedding_type), embedding_type=embedding_type, timeout=400))[0:4]
                     # row+=list(dummy(pair[0], pair[1]))[0:4]
                 csv_writer.writerow(row)
                 # print(row)
