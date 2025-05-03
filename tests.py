@@ -1,7 +1,7 @@
 from csv import writer
 from multiprocessing import Process, Queue
 from typing import Callable
-from algorithms.wikidata import join, embedding, llm
+from algorithms.yagos import join, embedding, llm
 
 from tests.pair_generator import create_random_pairs
 from utils.enums import EmbeddingType
@@ -23,7 +23,7 @@ if __name__ == "__main__":
     for pair in PAIRS:
         try:
             LOGGER.info(f"Starting pair {pair}...")
-            with open("measurements/wikidata.csv", "a", newline="") as csv:
+            with open("measurements/yagos.csv", "a", newline="") as csv:
                 csv_writer = writer(csv, delimiter=",")
                 row = [pair[0], pair[1]]
                 row+=timeout(join, (pair[0], pair[1], .9))[0:4]
