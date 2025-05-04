@@ -20,18 +20,23 @@ def join(model, entity1: str, entity2: str, acceptance_threshold: float=1.0):
 
     # Find the last 'p' key (e.g., p5, p10, etc.)
     last_p_key = next(key for key in reversed(data[0].keys()) if key.startswith('p'))
-    
-    # Find the first 'x' key (e.g., x1)
-    first_x_key = next(key for key in data[0].keys() if key.startswith('x'))
-    
-    # Find the last 'x' key (e.g., x5, x7, etc.)
-    last_x_key = next(key for key in reversed(data[0].keys()) if key.startswith('x'))
-    
+
+    try:
+        # Find the first 'x' key (e.g., x1)
+        first_x_key = next(key for key in data[0].keys() if key.startswith('x'))
+
+        # Find the last 'x' key (e.g., x5, x7, etc.)
+        last_x_key = next(key for key in reversed(data[0].keys()) if key.startswith('x'))
+        
+        first_x_value = data[0][first_x_key]['value']
+        last_x_value = data[0][last_x_key]['value']
+    except StopIteration:
+        first_x_value = entity1
+        last_x_value = entity2
     # Extract the corresponding values for first and last 'p' and 'x' keys
     first_p_value = data[0][first_p_key]['value']
     last_p_value = data[0][last_p_key]['value']
-    first_x_value = data[0][first_x_key]['value']
-    last_x_value = data[0][last_x_key]['value']
+    
     for entry in data:
         # Iterate over the 'x' and 'p' pairs and form the desired triples
         for i in range(1, len(entry)//2):  # Skip p0
