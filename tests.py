@@ -27,7 +27,7 @@ if __name__ == "__main__":
                 csv_writer = writer(csv, delimiter=",")
                 row = [pair[0], pair[1]]
                 # row+=timeout(join, (pair[0], pair[1], .9))[0:4]
-                row+=timeout(embedding, (pair[0], pair[1], EmbeddingType.WIKI2VEC, .9))[0:4]
+                row+=timeout(embedding, (pair[0], pair[1], EmbeddingType.WIKI2VEC, .8))[0:4]
                 # for embedding_type in [EmbeddingType.WORD2VEC, EmbeddingType.FASTTEXT, EmbeddingType.SBERT]:
                 #     row+= list(timeout(embedding, (pair[0], pair[1], embedding_type), embedding_type=embedding_type, timeout=400))[0:4]
                     # row+=list(dummy(pair[0], pair[1]))[0:4]
