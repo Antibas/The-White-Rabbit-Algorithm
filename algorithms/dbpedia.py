@@ -111,7 +111,7 @@ def embedding(model, entity1: str, entity2: str, embedding_type: EmbeddingType=E
     
     LOGGER.info(f"Similarity between {start_node} and {target_node}: {word_entity_sim}")
     if word_entity_sim >= acceptance_threshold:
-        return round(time()-now), 1, word_entity_sim, word_entity_sim, [(start_node, "", target_node)]
+        return round(time()-now), 1, round(word_entity_sim, 2), round(word_entity_sim, 2), [(start_node, "", target_node)]
     
     counter = 1
     depth,path = find_path_between_nodes(start_node, target_node, f"{DBPEDIA_URL}/query", model, embedding_type=embedding_type)
@@ -160,7 +160,7 @@ def llm(model, entity1: str, entity2: str, acceptance_threshold: float=1.0):
     
     LOGGER.info(f"Similarity between {start_node} and {target_node}: {word_entity_sim}")
     if word_entity_sim >= acceptance_threshold:
-        return round(time()-now), 1, word_entity_sim, word_entity_sim, [(start_node, "", target_node)]
+        return round(time()-now), 1, round(word_entity_sim, 2), round(word_entity_sim, 2), [(start_node, "", target_node)]
     
     counter = 1
     depth,path = find_path_between_nodes(start_node, target_node, f"{DBPEDIA_URL}/query", llm=True)

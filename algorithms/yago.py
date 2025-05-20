@@ -111,7 +111,7 @@ def embedding(model, entity1: str, entity2: str, embedding_type: EmbeddingType=E
     
     LOGGER.info(f"Similarity between {start_node} and {target_node}: {word_entity_sim}")
     if word_entity_sim >= acceptance_threshold:
-        return round(time()-now), 1, word_entity_sim, word_entity_sim, [(entity1, "", entity2)]
+        return round(time()-now), 1, round(word_entity_sim, 2), round(word_entity_sim, 2), [(entity1, "", entity2)]
     
     counter = 1
     depth,path = find_path_between_nodes(start_node, target_node, YAGOS_URL, model, resource_type=ResourceType.YAGOS, embedding_type=embedding_type)
@@ -160,7 +160,7 @@ def llm(entity1: str, entity2: str, acceptance_threshold: float=1.0):
     
     LOGGER.info(f"Similarity between {start_node} and {target_node}: {word_entity_sim}")
     if word_entity_sim >= acceptance_threshold:
-        return round(time()-now), 1, word_entity_sim, word_entity_sim, [(entity1, "", entity2)]
+        return round(time()-now), 1, round(word_entity_sim, 2), round(word_entity_sim, 2), [(entity1, "", entity2)]
     
     counter = 1
     depth,path = find_path_between_nodes(start_node, target_node, YAGOS_URL, resource_type=ResourceType.YAGOS, llm=True)

@@ -113,7 +113,7 @@ def embedding(model, entity1: str, entity2: str, embedding_type: EmbeddingType=E
     word_entity_sim = get_entity_similarity(entity1, entity2, model, embedding_type)
     LOGGER.info(f"Similarity between {entity1} and {entity2}: {word_entity_sim}")
     if word_entity_sim >= acceptance_threshold:
-        return round(time()-now), 1, word_entity_sim, word_entity_sim, [(entity1, "", entity2)]
+        return round(time()-now), 1, round(word_entity_sim, 2), round(word_entity_sim, 2), [(entity1, "", entity2)]
     
     counter = 1
     depth,path = find_path_between_nodes_emb_wiki(entity1, entity2, model, embedding_type=embedding_type)#, resource_type=ResourceType.WIKIDATA, agent=True, emb=True)
@@ -165,7 +165,7 @@ def llm(model, entity1: str, entity2: str, acceptance_threshold: float=1.0):
     
     LOGGER.info(f"Similarity between {entity1} and {entity2}: {word_entity_sim}")
     if word_entity_sim >= acceptance_threshold:
-        return round(time()-now), 1, word_entity_sim, word_entity_sim, [(entity1, "", entity2)]
+        return round(time()-now), 1, round(word_entity_sim, 2), round(word_entity_sim, 2), [(entity1, "", entity2)]
     
     counter = 1
     depth,path = find_path_between_nodes_emb_wiki(entity1, entity2, model, llm=True)#, resource_type=ResourceType.WIKIDATA, agent=True, emb=True)
