@@ -1,15 +1,63 @@
 from time import time
-from utils.constants import YAGOS_RESOURCE_URL, YAGOS_URL
+from utils.constants import YAGO_RESOURCE_URL, YAGO_URL
 from utils.enums import EmbeddingType, ResourceType
 from utils.logger import LOGGER
 from utils.pathfinder import find_path, find_path_between_nodes
 from utils.utils import get_entity_similarity
 
+def white_rabbit(model, entity1: str, entity2: str, acceptance_threshold: float=1.0):
+    start_node=f"{YAGO_RESOURCE_URL}/{entity1}"
+    target_node=f"{YAGO_RESOURCE_URL}/{entity2}"
+    now = time()
+    word_entity_sim = get_entity_similarity(entity1, entity2, model)
+    
+    LOGGER.info(f"Similarity between {start_node} and {target_node}: {word_entity_sim}")
+    if word_entity_sim >= acceptance_threshold:
+        return round(time()-now), 1, round(word_entity_sim, 2), round(word_entity_sim, 2), [(entity1, "", entity2)]
+    
+    counter = 1
+    depth,path = find_path_between_nodes(start_node, target_node, YAGO_URL, model, resource_type=ResourceType.YAGO)
+    if not path:
+        return round(time()-now), 0, 0, 0, []
+    
+    totalp=0.0
+    totale=0.0
+    now2 = time()
+    
+    lana=len(path)
+    ida=1
+    for triple in path:
+        xa0= triple[0][0].rsplit('/', 1)[-1]
+        xa2= triple[2][0].rsplit('/', 1)[-1]
+        xa0=xa0.replace("_"," ").replace("-",' ')
+        xa2=xa2.replace("_"," ").replace("-",' ')
+        xa3=entity2
+        xa3=xa3.replace("_"," ").replace("-",' ')
+    
+        word_entity_similarity = get_entity_similarity(xa0, xa2, model)
+        totalp+= word_entity_similarity
+    
+        word_entity_similarity2 = get_entity_similarity(xa0, xa3, model)
+        totale+= word_entity_similarity2
+        LOGGER.info(f"Similarity between {xa0} and {xa2}: {word_entity_similarity} {word_entity_similarity2} ")
+        ida=ida+1
+        if ida==lana:
+            break
 
-def join(model, entity1: str, entity2: str, acceptance_threshold: float=1.0):
+        counter+=1
+        if word_entity_similarity >= acceptance_threshold:
+            nn = totalp/(float(counter))
+            nt = totale/(float(counter))
+            return round(now2-now), counter, round(nn, 2), round(nt, 2), path
+        
+    nn = totalp/(float(depth))
+    nt = totale/(float(depth))
+    return round(now2-now), depth, round(nn, 2), round(nt, 2), path
+
+def query_expansion(model, entity1: str, entity2: str, acceptance_threshold: float=1.0):
     now = time()
     paths: list[tuple[str, str, str]] = []
-    depth, results = find_path(entity1, entity2, agent=True, resource_type=ResourceType.YAGOS)
+    depth, results = find_path(entity1, entity2, agent=True, resource_type=ResourceType.YAGO)
     
     if not results:
         return round(time()-now), 0, 0, 0, []
@@ -103,9 +151,9 @@ def join(model, entity1: str, entity2: str, acceptance_threshold: float=1.0):
     nt = totale/(float(depth))
     return round(now2-now), depth, round(nn, 2), round(nt, 2), paths
 
-def embedding(model, entity1: str, entity2: str, embedding_type: EmbeddingType=EmbeddingType.WIKI2VEC, acceptance_threshold: float=1.0):
-    start_node=f"{YAGOS_RESOURCE_URL}/{entity1}"
-    target_node=f"{YAGOS_RESOURCE_URL}/{entity2}"
+def embedding(model, entity1: str, entity2: str, embedding_type: EmbeddingType, acceptance_threshold: float=1.0):
+    start_node=f"{YAGO_RESOURCE_URL}/{entity1}"
+    target_node=f"{YAGO_RESOURCE_URL}/{entity2}"
     now = time()
     word_entity_sim = get_entity_similarity(entity1, entity2, model, embedding_type)
     
@@ -114,7 +162,7 @@ def embedding(model, entity1: str, entity2: str, embedding_type: EmbeddingType=E
         return round(time()-now), 1, round(word_entity_sim, 2), round(word_entity_sim, 2), [(entity1, "", entity2)]
     
     counter = 1
-    depth,path = find_path_between_nodes(start_node, target_node, YAGOS_URL, model, resource_type=ResourceType.YAGOS, embedding_type=embedding_type)
+    depth,path = find_path_between_nodes(start_node, target_node, YAGO_URL, model, resource_type=ResourceType.YAGO, embedding_type=embedding_type)
     if not path:
         return round(time()-now), 0, 0, 0, []
     
@@ -153,8 +201,8 @@ def embedding(model, entity1: str, entity2: str, embedding_type: EmbeddingType=E
     return round(now2-now), depth, round(nn, 2), round(nt, 2), path
 
 def llm(entity1: str, entity2: str, acceptance_threshold: float=1.0):
-    start_node=f"{YAGOS_RESOURCE_URL}/{entity1}"
-    target_node=f"{YAGOS_RESOURCE_URL}/{entity2}"
+    start_node=f"{YAGO_RESOURCE_URL}/{entity1}"
+    target_node=f"{YAGO_RESOURCE_URL}/{entity2}"
     now = time()
     word_entity_sim = get_entity_similarity(entity1, entity2)
     
@@ -163,7 +211,7 @@ def llm(entity1: str, entity2: str, acceptance_threshold: float=1.0):
         return round(time()-now), 1, round(word_entity_sim, 2), round(word_entity_sim, 2), [(entity1, "", entity2)]
     
     counter = 1
-    depth,path = find_path_between_nodes(start_node, target_node, YAGOS_URL, resource_type=ResourceType.YAGOS, llm=True)
+    depth,path = find_path_between_nodes(start_node, target_node, YAGO_URL, resource_type=ResourceType.YAGO, llm=True)
     if not path:
         return round(time()-now), 0, 0, 0, []
     

@@ -4,7 +4,7 @@ from enum import Enum, IntEnum, auto
 class ResourceType(Enum):
     DBPEDIA="dbpedia"
     WIKIDATA="wikidata"
-    YAGOS="yagos"
+    YAGO="yago"
 
 class EmbeddingType(IntEnum):
     WIKI2VEC=auto()

@@ -8,8 +8,7 @@ from utils.enums import EmbeddingType, ResourceType
 from utils.logger import LOGGER
 from utils.utils import claude_message, construct_query, execute_query, get_entity_similarity, is_english_only
 
-
-def find_path(entity1: str, entity2: str, max_depth: int=15, agent: bool=False, resource_type: ResourceType=ResourceType.DBPEDIA):#, wikidata: bool=False):
+def find_path(entity1: str, entity2: str, max_depth: int=15, agent: bool=False, resource_type: ResourceType=ResourceType.DBPEDIA):
     """
     Βρίσκει μονοπάτι μεταξύ δύο οντοτήτων στο DBpedia μέσω SPARQL queries.
     """
@@ -66,15 +65,10 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, mo
         if current_node[0] in visited:
             continue
         visited.add(current_node[0])
-        # ilen=0
-        # for step2 in path:
-        #     ilen=ilen+1
 
         # Check if we reached the target node
         if current_node[0] == target_node or (not llm and result2 in target_node):
             path=path + [(current_node, "reached", target_node)]
-            # for step in path:
-            #     LOGGER.info(f"{step[0]} --{step[1]}--> {step[2]}")
             return len(path)-1, path
 
         # Query outgoing links from the current node
@@ -127,7 +121,6 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, mo
                 epel=toyl-1
 
             if llm:
-                # stringas="do not insert δικους σου nodes αλλα επελεξε ακριβως "+str(epel)+" αν ειναι διαθεσιμoi απο την "+str(lista)+" αυτους που πλησιαζουν πιο πολυ  α΄΄΄΄λλα και αλλους που θα μπορουσαν πιο πιθανα να οδηγησουν στον κομβο  "+target_node+" επελεξε συνολικα +"+str(epel)+"και δωσε τους ενα σκορ εγγυτητας με τρια δεκαδικα. εαν δεν πλησιαζει πολυ δωσε σκορ κατω απο 0.4. Αν πλησιζει πολυ δωσε πανω απο 0.7. Επελεξε τους κομβους με τα μεγαλυτερα σκορ. Επισης μην επιλεξεις nodes που αναφερονται σε γενικες κατηγοριες αλλα μονο σε υπαρκτα entities. Return them  as string of entities. An entity is node comma score. Score is from 0.0 for irrelevant to target to 1 .if the node includes the word of the target, return as a score 1.0 .Do not comment scores.If target node is exacly found in list give it score 500.0. Final string is entity#entity#entity etc mean seperate entities with without headers # Return plain string.Αν δεν ειναι διαθεσιμοι 6 κομβοι δεν πειραζει και ΜΗΝ ΔΗΜΙΟΥΡΓΗΣΕΙΣ ΚΟΜΒΟΥΣ ΑΠΟ ΤΗΝ ΔΙΚΗ ΣΟΥ ΓΝΩΣΗ που δεν υπαρχουν στην λιστα. ΑΚΟΜΑ ΚΑΙ ΕΝΑΣ ΝΑ ΕΙΝΑΙ Ο ΚΟΜΒΟΣ ΕΠΕΣΤΡΕΨΕ ΤΟΝ"
                 stringas=claude_message(epel, lista, target_node)
                 message = client.messages.create(
                     model=CLAUDE_MODEL,
@@ -288,23 +281,9 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
         if current_node[0] in visited:
             continue
         visited.add(current_node[0])
-        # ilen=0
-        # for step2 in path:
-        #     ilen=ilen+1
-
         # Check if we reached the target node
         if current_node[0] == target_node or (not llm and result2 in target_node):
             path=path + [(current_node, "reached", target_node)]
-            
-            # for step in path:
-            #     # LOGGER.info(f"{step[0]} --{step[1]}--> {step[2]}")
-                
-            #     aka1=step[0][0]
-            #     aka2=step[1]
-            #     aka3=step[2][0]
-            #     # if "reached" not in aka2:
-            #     #     LOGGER.info(f"{dicta22[aka1]} -- {dicta33[aka2]}--> {dicta22[aka3]} ")
-
             return len(path)-1, path
 
         # Query outgoing links from the current node
@@ -426,7 +405,6 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
                 
                 # Print sorted list
                 for item in sorted_data:
-                    # LOGGER.info(item)
                     a1=item[0]
                     a2=item[1]
                     oka=oka+a1+","+str(a2)+"#"

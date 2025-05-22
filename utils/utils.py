@@ -140,7 +140,6 @@ def construct_query(entity1: str, entity2: str, depth: int, wikidata: bool):
         query += f"FILTER (?p{depth} != <http://dbpedia.org/ontology/wikiPageWikiLink>)\n"
 
     query += "} limit 1"
-    # LOGGER.debug(query)
     return query
 
 def get_entity_label(entity_id: str, agent: bool=False, resource_type: ResourceType=ResourceType.DBPEDIA):
@@ -182,7 +181,6 @@ def get_entity_similarity(entity1: str, entity2: str, model, embedding_type: Emb
     if embedding_type in [EmbeddingType.FASTTEXT, EmbeddingType.WORD2VEC]:
         return get_pretrained_similarity(entity1, entity2, model)
     
-    # model = load_model(embedding_type)
     try:
         if not entity1.strip() or not entity2.strip():
             return 0
@@ -221,7 +219,6 @@ def get_wikidata_uri(label: str):
     return None
 
 def get_embedding(name: str, model):
-    # model = load_model(embedding_type)#MODELS.WORD2VEC if embedding_type==EmbeddingType.WORD2VEC else MODELS.FASTTEXT
     words = name.lower().split()
     vectors = [model[word] for word in words if word in model]
     return mean(vectors, axis=0) if vectors else zeros(300)
@@ -232,7 +229,6 @@ def get_pretrained_similarity(entity1: str, entity2: str, model):
     return similarity[0, 1]
 
 def get_sbert_similarity(entity1: str, entity2: str, model: SentenceTransformer):
-    # model = load_model(EmbeddingType.SBERT)
     embeddings = model.encode([entity1, entity2], convert_to_tensor=True)
     similarity = cos_sim(embeddings, embeddings)
     return similarity[0, 1]

@@ -1,7 +1,5 @@
 import os
 from gensim.models import KeyedVectors
-# from gensim.downloader import base_dir
-
 
 def load_data():
     path = os.path.join('word2vec', "word2vec-google-news-300.gz")
