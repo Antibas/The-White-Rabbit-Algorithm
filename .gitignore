@@ -176,7 +176,10 @@ cython_debug/
 *.bz2
 *.crdownload
 test.py
+tests.py
 paths15
 notes.txt
 *.gz
 paths.txt
+measurements/
+config/pairs.conf
