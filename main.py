@@ -1,8 +1,4 @@
-from types import ModuleType
-import algorithms.dbpedia as dbpedia
-import algorithms.wikidata as wikidata
-import algorithms.yago as yago
-from utils.enums import EmbeddingType
+from utils.enums import EmbeddingType, ResourceType
 from utils.utils import load_model, timeout
 from sys import argv
 from argparse import ArgumentParser
@@ -13,14 +9,19 @@ parser = ArgumentParser(
     epilog='Outputs the metrics extracted from the selected algorithm.'
 )
 
-DATASETS = {
-    "DBPEDIA": dbpedia,
-    "1": dbpedia,
-    "WIKIDATA": wikidata,
-    "2": wikidata,
-    "YAGO": yago,
-    "3": yago
-}
+def import_datasets():
+    print("Loading the datasets. This may take a while...")
+    import algorithms.dbpedia as dbpedia
+    import algorithms.wikidata as wikidata
+    import algorithms.yago as yago
+    return {
+        "DBPEDIA": dbpedia,
+        "1": dbpedia,
+        "WIKIDATA": wikidata,
+        "2": wikidata,
+        "YAGO": yago,
+        "3": yago
+    }
 
 def main():
     nodes = []
@@ -43,6 +44,7 @@ def main():
         except ValueError:
             source, target = s_i, t_i
         ds = input("Select one of the following datasets:\n\t1. DBPEDIA\n\t2. WIKIDATA\n\t3. YAGO\n\nSelect them with either their number or name: ")
+        DATASETS = import_datasets()
         dataset = None
         try:    
             dataset = DATASETS[ds.upper()]
@@ -98,15 +100,16 @@ def main():
         global parser
         parser.add_argument('source', help="The source node")
         parser.add_argument('target', help="The target node")
-        parser.add_argument('dataset', choices=["DBPEDIA", "WIKIDATA", "YAGO"], help="The dataset you want to use")
+        parser.add_argument('dataset', choices=[r.name for r in ResourceType], help="The dataset you want to use")
         parser.add_argument('algorithm', choices=["white-rabbit", "query-expansion", "embedding", "llm"], help="The algorithm you want to test")
-        parser.add_argument('-e', '--embedding', required=False, default=None, choices=[str(e.name) for e in EmbeddingType], help="The embedding you want to use. Only works if you chose 'embedding' as an algorithm")
+        parser.add_argument('-e', '--embedding', required=False, default=None, choices=[e.name for e in EmbeddingType], help="The embedding you want to use. Only works if you chose 'embedding' as an algorithm")
         parser.add_argument('-t', '--timeout', required=False, default=0, help="The optional timeout in seconds. If 0, no timeout is applied")
         parser.add_argument('-a', '--accuracy-threshold', required=False, default=1, help="The optional accuracy threshold accepted. Must be a float in (0, 1]")
 
         arguments = parser.parse_args()
         source: str = arguments.source
         target: str = arguments.target
+        DATASETS = import_datasets()
         dataset = DATASETS[arguments.dataset.upper()]
         alg: str = arguments.algorithm
         embedding = arguments.embedding
@@ -138,14 +141,13 @@ def main():
         except ValueError:
             print(f"Invalid timeout: {tm}. Changing to no timeout.")
             timeout_seconds = 0
-    inputs = (source, target, accuracy_threshold)
+    inputs = (source, target, accuracy_threshold) if not embedding else (source, target, embedding, accuracy_threshold)
     print("Inputs: ")
     print(f"\tSource: {source}")
     print(f"\tTarget: {target}")
     print(f"\tDataset: {dataset.__name__}")
     print(f"\tAlgorithm: {algorithm.__name__}")
     if embedding:
-        inputs = (source, target, embedding, accuracy_threshold)
         print(f"\tEmbedding: {embedding}")
     print(f"\tAccuracy Threshold: {accuracy_threshold}")
     print(f"\tTimeout in {timeout_seconds} seconds.")
@@ -157,10 +159,10 @@ def main():
         model = load_model(embedding_type)
         time, length, pc, ta, path = algorithm(model, *inputs)
     if not length:
-        print("Algorithm timed out and/or no valid path was found. Try increasing the timeout.")
+        print("Algorithm timed out and/or no valid path was found. Try a different source-target pair or increase the timeout.")
     else:
         print(f"Algorithm finished in {time} seconds.")
-        print(f"Path length: {length}")
+        print(f"Path Length: {length}")
         print(f"Path Coherence: {pc}")
         print(f"Target Affiliation: {ta}")
         print(f"Path:")
