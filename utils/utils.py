@@ -4,10 +4,10 @@ from typing import Any, Callable, Optional
 from SPARQLWrapper import JSON, SPARQLWrapper
 from numpy import array, dot, mean, zeros
 from numpy.linalg import norm
-from utils.constants import AGENT, BASE_URLS, SBERT_MODEL, WIKI2VEC_MODEL, WIKIDATA_URL
+from white_rabbit.utils.constants import AGENT, BASE_URLS, SBERT_MODEL, WIKI2VEC_MODEL, WIKIDATA_URL
 from sklearn.metrics.pairwise import cosine_similarity
-from utils.enums import EmbeddingType, ResourceType
-from utils.logger import LOGGER
+from white_rabbit.utils.enums import EmbeddingType, ResourceType
+from white_rabbit.utils.logger import LOGGER
 from sentence_transformers.util import cos_sim
 from sentence_transformers import SentenceTransformer
 from wikipedia2vec import Wikipedia2Vec

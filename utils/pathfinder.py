@@ -3,10 +3,12 @@ from traceback import print_exc
 from SPARQLWrapper import JSON, SPARQLWrapper
 from anthropic import Anthropic
 
-from utils.constants import AGENT, BASE_URLS, CLAUDE_MODEL, RESOURCE_URLS, SPARQL_PREFIX, WIKIDATA_URL
-from utils.enums import EmbeddingType, ResourceType
-from utils.logger import LOGGER
-from utils.utils import claude_message, construct_query, execute_query, get_entity_similarity, is_english_only
+from white_rabbit.utils.constants import AGENT, BASE_URLS, CLAUDE_MODEL, RESOURCE_URLS, SPARQL_PREFIX, WIKIDATA_URL
+from white_rabbit.utils.enums import EmbeddingType, ResourceType
+from white_rabbit.utils.logger import LOGGER
+from white_rabbit.utils.utils import claude_message, construct_query, execute_query, get_entity_similarity, is_english_only
+
+from flask_socketio import emit
 
 def find_path(entity1: str, entity2: str, max_depth: int=15, agent: bool=False, resource_type: ResourceType=ResourceType.DBPEDIA):
     """
@@ -58,6 +60,7 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, mo
             it=it+1
             lis.append(c[0]+" "+str(c[1]))
         current_node, path = queue.pop(0)
+        emit("response", str(path), broadcast=True)
         
         result2 = current_node[0].split("resource/")[-1]
      

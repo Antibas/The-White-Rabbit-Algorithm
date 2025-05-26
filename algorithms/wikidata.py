@@ -1,9 +1,9 @@
 from time import time
 
-from utils.enums import EmbeddingType, ResourceType
-from utils.logger import LOGGER
-from utils.pathfinder import find_path, find_path_between_nodes_emb_wiki
-from utils.utils import get_entity_label, get_entity_similarity, get_wikidata_uri
+from white_rabbit.utils.enums import EmbeddingType, ResourceType
+from white_rabbit.utils.logger import LOGGER
+from white_rabbit.utils.pathfinder import find_path, find_path_between_nodes_emb_wiki
+from white_rabbit.utils.utils import get_entity_label, get_entity_similarity, get_wikidata_uri
 
 def white_rabbit(model, entity1: str, entity2: str, acceptance_threshold: float=1.0):
     now = time()

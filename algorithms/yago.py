@@ -1,9 +1,9 @@
 from time import time
-from utils.constants import YAGO_RESOURCE_URL, YAGO_URL
-from utils.enums import EmbeddingType, ResourceType
-from utils.logger import LOGGER
-from utils.pathfinder import find_path, find_path_between_nodes
-from utils.utils import get_entity_similarity
+from white_rabbit.utils.constants import YAGO_RESOURCE_URL, YAGO_URL
+from white_rabbit.utils.enums import EmbeddingType, ResourceType
+from white_rabbit.utils.logger import LOGGER
+from white_rabbit.utils.pathfinder import find_path, find_path_between_nodes
+from white_rabbit.utils.utils import get_entity_similarity
 
 def white_rabbit(model, entity1: str, entity2: str, acceptance_threshold: float=1.0):
     start_node=f"{YAGO_RESOURCE_URL}/{entity1}"
