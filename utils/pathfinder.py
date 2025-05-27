@@ -8,7 +8,7 @@ from white_rabbit.utils.enums import EmbeddingType, ResourceType
 from white_rabbit.utils.logger import LOGGER
 from white_rabbit.utils.utils import claude_message, construct_query, execute_query, get_entity_similarity, is_english_only
 
-from flask_socketio import emit
+# from flask_socketio import emit
 
 def find_path(entity1: str, entity2: str, max_depth: int=15, agent: bool=False, resource_type: ResourceType=ResourceType.DBPEDIA):
     """
@@ -60,7 +60,7 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, mo
             it=it+1
             lis.append(c[0]+" "+str(c[1]))
         current_node, path = queue.pop(0)
-        emit("response", str(path), broadcast=True)
+        # emit("response", str(path), broadcast=True)
         
         result2 = current_node[0].split("resource/")[-1]
      
@@ -72,6 +72,7 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, mo
         # Check if we reached the target node
         if current_node[0] == target_node or (not llm and result2 in target_node):
             path=path + [(current_node, "reached", target_node)]
+            # emit("response", str(path), broadcast=True)
             return len(path)-1, path
 
         # Query outgoing links from the current node
