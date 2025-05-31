@@ -2,6 +2,7 @@ from json import loads
 from traceback import print_exc
 from SPARQLWrapper import JSON, SPARQLWrapper
 from anthropic import Anthropic
+from flask_socketio import emit
 
 from white_rabbit.utils.constants import AGENT, BASE_URLS, CLAUDE_MODEL, RESOURCE_URLS, SPARQL_PREFIX, WIKIDATA_URL
 from white_rabbit.utils.enums import EmbeddingType, ResourceType
@@ -23,16 +24,16 @@ def find_path(entity1: str, entity2: str, max_depth: int=15, agent: bool=False, 
 
     # Επαναληπτική εκτέλεση queries μέχρι το μέγιστο βάθος
     for depth in range(1, max_depth + 1):
-        LOGGER.info(f"Executing query with depth {depth}...")
+        emit('response', f"Executing query with depth {depth}...")
         query = construct_query(entity1, entity2, depth,(resource_type == ResourceType.WIKIDATA))
 
         results = execute_query(sparql, query)
 
         if results and results["results"]["bindings"]:
-            LOGGER.info(f"Path found at depth {depth}!")
+            emit('response', f"Path found at depth {depth}!")
             return depth, results["results"]["bindings"]
 
-    LOGGER.error("No path found within the given depth.")
+    emit('response', {"status": 404, "error": "No path found within the given depth."})
     return None, None
 
 def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, model, llm: bool=False, agent: bool=False, resource_type: ResourceType=ResourceType.DBPEDIA, embedding_type: EmbeddingType=EmbeddingType.WIKI2VEC):
@@ -50,7 +51,7 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, mo
                 {"role": "user", "content": "Hello, world"}
             ]
         )
-        LOGGER.info(F"Tokens remaining: {count.input_tokens}") 
+        emit('response', F"Tokens remaining: {count.input_tokens}") 
 
     while queue:
         lis=[]
@@ -96,7 +97,7 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, mo
             if isinstance(results, bytes):  # Decode if necessary
                 results = loads(results.decode("utf-8"))
         except Exception as e:
-            LOGGER.error(f"Error querying SPARQL endpoint: {e}")
+            emit('response', {"status": 502 if "502" in str(e) else 500, "error": f"Error querying SPARQL endpoint: {e}"})
             print_exc() 
             continue
         lista=[]
@@ -157,7 +158,7 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, mo
                     last_part2=last_part.replace("_"," ")
                     word_entity_sim = get_entity_similarity(si1, last_part2, model, embedding_type=embedding_type)
 
-                    LOGGER.info(f"Similarity between {si1} and {last_part2}: {word_entity_sim}")
+                    emit('response', f"Similarity between {si1} and {last_part2}: {word_entity_sim}")
                     if word_entity_sim is not None:
                         oka=oka+prf+last_part+","+str(word_entity_sim)+"#"
                         lss=[prf+last_part,float(word_entity_sim)]
@@ -214,7 +215,7 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, mo
                                     
                                     
                                 except Exception as e:
-                                    LOGGER.error(f"An error occurred: {e}")
+                                    emit('response', {"status": 500, "error": f"An error occurred: {e}"})
                                     print_exc() 
                                     break
                                     
@@ -225,7 +226,7 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, mo
                             if position != -1:
                                 queue.insert(position,(sco, path + [(current_node, dicta[sco[0]], sco)]))
                     except Exception as e:
-                        LOGGER.error(f"An error occurred: {e}")
+                        emit('response', {"status": 500, "error": f"An error occurred: {e}"})
                         print_exc() 
                         
     # If queue exhausts without finding target
@@ -269,7 +270,7 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
                 {"role": "user", "content": "Hello, world"}
             ]
         )
-        LOGGER.info(F"Tokens remaining: {count.input_tokens}") 
+        emit('response', F"Tokens remaining: {count.input_tokens}") 
     
     while queue:
         lis=[]
@@ -321,7 +322,7 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
             if isinstance(results, bytes):  # Decode if necessary
                 results = loads(results.decode("utf-8"))
         except Exception as e:
-            LOGGER.error(f"Error querying SPARQL endpoint: {e}")
+            emit('response', {"status": 502 if "502" in str(e) else 500, "error": f"Error querying SPARQL endpoint: {e}"})
             print_exc() 
             continue
         lista=[]
@@ -396,7 +397,7 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
                     last_part=l
                     last_part2=dicta22[l]
                     word_entity_sim = get_entity_similarity(si1, last_part2, model, embedding_type=embedding_type)
-                    LOGGER.info(f"Similarity between {si1} and {last_part2}: {word_entity_sim}")
+                    emit('response', f"Similarity between {si1} and {last_part2}: {word_entity_sim}")
                     if word_entity_sim is not None:
                         oka=oka+prf+last_part+","+str(word_entity_sim)+"#"
                         lss=[prf+last_part,float(word_entity_sim)]
@@ -457,7 +458,7 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
                                     
                                     
                                 except Exception as e:
-                                    LOGGER.error(f"An error occurred: {e}")
+                                    emit('response', {"status": 500, "error": f"An error occurred: {e}"})
                                     print_exc() 
                                     break
                                     
@@ -468,7 +469,7 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
                             if position!=-1:
                                 queue.insert(position,(sco, path + [(current_node, dicta[sco[0]], sco)]))
                     except Exception as e:
-                        LOGGER.error(f"An error occurred: {e}")
+                        emit('response', {"status": 500, "error": f"An error occurred: {e}"})
                         print_exc() 
                         
     # If queue exhausts without finding target

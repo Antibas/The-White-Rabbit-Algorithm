@@ -2,6 +2,7 @@ from multiprocessing import Process, Queue
 from re import fullmatch
 from typing import Any, Callable, Optional
 from SPARQLWrapper import JSON, SPARQLWrapper
+from flask_socketio import emit
 from numpy import array, dot, mean, zeros
 from numpy.linalg import norm
 from white_rabbit.utils.constants import AGENT, BASE_URLS, SBERT_MODEL, WIKI2VEC_MODEL, WIKIDATA_URL
@@ -78,7 +79,7 @@ def timeout2(func: Callable[[Any, str, str, Optional[EmbeddingType]], tuple], en
     process.join(timeout)
 
     if process.is_alive():
-        LOGGER.error(f"Pair {(entity1, entity2)} timed out. Continuing...")
+        emit('response', {"status": 504, "error": f"Path {(entity1, entity2)} timed out."})
         process.terminate()
         process.join()
     
@@ -89,7 +90,7 @@ def read_conf(filename: str):
         result = list()
         for pair in pairs.readlines():
             if pair.startswith("#"):
-                LOGGER.info(f"Skipping {pair}...")
+                emit('response', f"Skipping {pair}...")
                 continue
             pair_sp = pair.split(",")
             result.append((pair_sp[0].strip(), pair_sp[1].strip()))
@@ -106,7 +107,7 @@ def execute_query(sparql: SPARQLWrapper, query: str):
         results = sparql.query().convert()
         return results
     except Exception as e:
-        LOGGER.error(f"Error executing query: {e}")
+        emit('response', {"status": 500, "error": f"Error executing query: {e}"})
         return None
 
 def construct_query(entity1: str, entity2: str, depth: int, wikidata: bool):
@@ -194,7 +195,7 @@ def get_entity_similarity(entity1: str, entity2: str, model, embedding_type: Emb
         )
         return similarity
     except KeyError as e:
-        LOGGER.error(f"Entity not found: {e.__str__()}")
+        # LOGGER.error(f"Entity not found: {e.__str__()}")
         return 0
 
 def is_english_only(s):
