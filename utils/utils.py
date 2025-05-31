@@ -16,7 +16,6 @@ from sentence_transformers.util import cos_sim
 from sentence_transformers import SentenceTransformer
 from wikipedia2vec import Wikipedia2Vec
 from queue import Empty as QueueEmptyException
-from urllib.error import URLError
 
 def load_model(embedding_type: EmbeddingType = EmbeddingType.WIKI2VEC):
     if embedding_type == EmbeddingType.WIKI2VEC:
