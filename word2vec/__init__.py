@@ -1,8 +1,9 @@
 import os
+from flask_socketio import emit
 from gensim.models import KeyedVectors
 from gensim.downloader import load
 
-from utils.logger import LOGGER
+from white_rabbit.utils.logger import LOGGER
 
 def load_data():
     try:
@@ -11,5 +12,6 @@ def load_data():
         return model
     except FileNotFoundError:
         LOGGER.info(F"word2vec-google-news-300.gz not found. Downloading...")
+        emit('response', "Please wait until the embedding is loaded...")
         return load('word2vec-google-news-300')
 

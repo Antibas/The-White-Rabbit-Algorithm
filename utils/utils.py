@@ -25,9 +25,9 @@ def load_model(embedding_type: EmbeddingType = EmbeddingType.WIKI2VEC):
         return SentenceTransformer(SBERT_MODEL)
     
     if embedding_type == EmbeddingType.WORD2VEC:
-        from word2vec import load_data
+        from white_rabbit.word2vec import load_data
     else:
-        from fasttext import load_data
+        from white_rabbit.fasttext import load_data
     
     return load_data()
 

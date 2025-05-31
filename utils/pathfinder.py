@@ -224,7 +224,10 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, mo
                                 position=len(queue)-1
                                 
                             if position != -1:
-                                queue.insert(position,(sco, path + [(current_node, dicta[sco[0]], sco)]))
+                                try:
+                                    queue.insert(position,(sco, path + [(current_node, dicta[sco[0]], sco)]))
+                                except KeyError as ke:
+                                    LOGGER.error(ke.__str__())
                     except Exception as e:
                         emit('response', {"status": 500, "error": f"An error occurred: {e}"})
                         print_exc() 
