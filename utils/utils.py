@@ -1,5 +1,7 @@
+from functools import wraps
 from multiprocessing import Process, Queue
 from re import fullmatch
+from time import time
 from typing import Any, Callable, Optional
 from SPARQLWrapper import JSON, SPARQLWrapper
 from flask_socketio import emit
@@ -13,6 +15,7 @@ from sentence_transformers.util import cos_sim
 from sentence_transformers import SentenceTransformer
 from wikipedia2vec import Wikipedia2Vec
 from queue import Empty as QueueEmptyException
+from urllib.error import URLError
 
 def load_model(embedding_type: EmbeddingType = EmbeddingType.WIKI2VEC):
     if embedding_type == EmbeddingType.WIKI2VEC:
@@ -161,6 +164,28 @@ def get_entity_label(entity_id: str, agent: bool=False, resource_type: ResourceT
     # Extract label from the results
     if results["results"]["bindings"]:
         label = results["results"]["bindings"][0]["itemLabel"]["value"]
+        return label
+    
+    return None
+
+def get_property_label(property: str, agent: bool=False, resource_type: ResourceType=ResourceType.DBPEDIA):
+    sparql = SPARQLWrapper(BASE_URLS[resource_type], agent=AGENT) if agent else SPARQLWrapper(BASE_URLS[resource_type])
+
+    
+    query = f"""
+    SELECT ?property ?propertyLabel WHERE {{
+      BIND(<{property}> AS ?property)
+      SERVICE wikibase:label {{ bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }}
+    }}
+    """
+    
+    sparql.setQuery(query)
+    sparql.setReturnFormat(JSON)
+    results = sparql.query().convert()
+    
+    # Extract label from the results
+    if results["results"]["bindings"]:
+        label = results["results"]["bindings"][0]["propertyLabel"]["value"]
         return label
     
     return None
