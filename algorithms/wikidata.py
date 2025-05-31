@@ -17,7 +17,7 @@ def white_rabbit(model, entity1: str, entity2: str, acceptance_threshold: float=
         word_entity_sim = get_entity_similarity(entity1, entity2, model)
         emit('response', f"Similarity between {entity1} and {entity2}: {word_entity_sim}")
         if word_entity_sim >= acceptance_threshold:
-            return round(time()-now), 1, round(word_entity_sim, 2), round(word_entity_sim, 2), [[[entity1, str(word_entity_sim)], "", [entity2, str(word_entity_sim)]]]
+            return round(time()-now), 1, round(word_entity_sim, 2), round(word_entity_sim, 2), [[[entity1, str(word_entity_sim)], "reached", [entity2, str(word_entity_sim)]]]
         
         counter = 1
         depth,path = find_path_between_nodes_emb_wiki(entity1, entity2, model)
@@ -48,8 +48,7 @@ def white_rabbit(model, entity1: str, entity2: str, acceptance_threshold: float=
             word_entity_similarity2 = get_entity_similarity(xa0, xa3, model)
             totale+= word_entity_similarity2
 
-            pa=get_property_label(triple[1], agent=True, resource_type=ResourceType.WIKIDATA).replace("_"," ").replace("-"," ")
-            print(pa)
+            pa=get_property_label(triple[1].rsplit('/', 1)[-1]).replace("_"," ").replace("-"," ")
             paths.append([[xa0, str(word_entity_similarity)], pa, [xa2, str(word_entity_similarity2)]])
             emit('response', f"Similarity between {xa0} and {xa2}: {word_entity_similarity} {word_entity_similarity2} ")
             ida=ida+1
@@ -127,13 +126,13 @@ def query_expansion(model, entity1: str, entity2: str, acceptance_threshold: flo
 
         # paths.append([[entity1], first_p_value, [first_x_value]])
         xa0=get_entity_label(entity1, agent=True, resource_type=ResourceType.WIKIDATA).replace("_"," ").replace("-"," ")
-        pa=get_property_label(first_p_value, agent=True, resource_type=ResourceType.WIKIDATA).replace("_"," ").replace("-"," ")
+        pa=get_property_label(first_p_value.rsplit('/', 1)[-1]).replace("_"," ").replace("-"," ")
         xa1=get_entity_label(first_x_value, agent=True, resource_type=ResourceType.WIKIDATA).replace("_"," ").replace("-"," ")
 
         word_entity_similarity = get_entity_similarity(xa0, xa1, model)
         totalp+= word_entity_similarity
         
-        paths.append([[xa0, word_entity_similarity], pa, [xa1, word_entity_similarity]])
+        paths.append([[xa0, str(word_entity_similarity)], pa, [xa1, str(word_entity_similarity)]])
         emit('response', f"Similarity between {xa0} and {xa1}: {word_entity_similarity}")
         if word_entity_similarity >= acceptance_threshold:
             return round(now2-now), depth, round(totalp, 2), round(totale, 2), paths
@@ -142,6 +141,7 @@ def query_expansion(model, entity1: str, entity2: str, acceptance_threshold: flo
         for triple in triples:
             xa0=get_entity_label(triple[0], agent=True, resource_type=ResourceType.WIKIDATA).replace("_"," ").replace("-"," ")
             xa1=get_entity_label(triple[2], agent=True, resource_type=ResourceType.WIKIDATA).replace("_"," ").replace("-"," ")
+            pa=get_property_label(triple[1].rsplit('/', 1)[-1]).replace("_"," ").replace("-"," ")
             
             word_entity_similarity = get_entity_similarity(xa0, xa1, model)
             totalp+= word_entity_similarity
@@ -149,7 +149,7 @@ def query_expansion(model, entity1: str, entity2: str, acceptance_threshold: flo
             xa2=get_entity_label(entity2, agent=True, resource_type=ResourceType.WIKIDATA).replace("_"," ").replace("-"," ")
             word_entity_similarity2 = get_entity_similarity(xa0, xa2, model)
             totale+= word_entity_similarity2
-            emit('response', f"Similarity between {get_entity_label(triple[0], agent=True, resource_type=ResourceType.WIKIDATA)} and {get_entity_label(triple[2], agent=True, resource_type=ResourceType.WIKIDATA)}: {word_entity_similarity}")
+            emit('response', f"Similarity between {xa0} and {xa1}: {word_entity_similarity}")
             
             counter += 1
             paths.append(triple)
@@ -160,16 +160,17 @@ def query_expansion(model, entity1: str, entity2: str, acceptance_threshold: flo
                 return round(now2-now), counter, round(nn, 2), round(nt, 2), paths
 
 
-        paths.append((last_x_value, last_p_value, entity2))
+        # paths.append((last_x_value, last_p_value, entity2))
         xa3=get_entity_label(last_x_value, agent=True, resource_type=ResourceType.WIKIDATA).replace("_"," ").replace("-"," ")
         xa4=get_entity_label(entity2, agent=True, resource_type=ResourceType.WIKIDATA).replace("_"," ").replace("-"," ")
-
+        pa=get_property_label(last_p_value.rsplit('/', 1)[-1]).replace("_"," ").replace("-"," ")
         word_entity_similarity = get_entity_similarity(xa3, xa4, model)
         totalp+= word_entity_similarity
 
         word_entity_similarity2 = get_entity_similarity(xa3, xa4, model)
         totale+= word_entity_similarity2
-        emit('response', f"Similarity between {xa3} and {xa4}: {word_entity_similarity}   {word_entity_similarity2}")
+        paths.append([[xa3, str(word_entity_similarity)], pa, [xa4, str(word_entity_similarity2)]])
+        emit('response', f"Similarity between {xa3} and {xa4}: {word_entity_similarity} {word_entity_similarity2}")
         nn = totalp/(float(depth))
         nt = totale/(float(depth))
         return round(now2-now), depth, round(nn, 2), round(nt, 2), paths
@@ -189,7 +190,8 @@ def embedding(model, entity1: str, entity2: str, embedding_type: EmbeddingType, 
         word_entity_sim = get_entity_similarity(entity1, entity2, model, embedding_type)
         emit('response', f"Similarity between {entity1} and {entity2}: {word_entity_sim}")
         if word_entity_sim >= acceptance_threshold:
-            return round(time()-now), 1, round(word_entity_sim, 2), round(word_entity_sim, 2), [(entity1, "", entity2)]
+            print('no counter')
+            return round(time()-now), 1, round(word_entity_sim, 2), round(word_entity_sim, 2), [[[entity1, str(word_entity_sim)], "reached", [entity2, str(word_entity_sim)]]]
         
         counter = 1
         depth,path = find_path_between_nodes_emb_wiki(entity1, entity2, model, embedding_type=embedding_type)#, resource_type=ResourceType.WIKIDATA, agent=True, emb=True)
@@ -202,6 +204,7 @@ def embedding(model, entity1: str, entity2: str, embedding_type: EmbeddingType, 
 
         lana=len(path)
         ida=1
+        paths=[]
         for triple in path:
             xa0= triple[0][0].rsplit('/', 1)[-1]
             xa2= triple[2][0].rsplit('/', 1)[-1]
@@ -218,6 +221,8 @@ def embedding(model, entity1: str, entity2: str, embedding_type: EmbeddingType, 
         
             word_entity_similarity2 = get_entity_similarity(xa0, xa3, model, embedding_type)
             totale+= word_entity_similarity2
+            pa=get_property_label(triple[1].rsplit('/', 1)[-1]).replace("_"," ").replace("-"," ")
+            paths.append([[xa0, str(word_entity_similarity)], pa, [xa2, str(word_entity_similarity2)]])
             emit('response', f"Similarity between {xa0} and {xa2}: {word_entity_similarity} {word_entity_similarity2} ")
             ida=ida+1
             if ida==lana:
@@ -227,11 +232,11 @@ def embedding(model, entity1: str, entity2: str, embedding_type: EmbeddingType, 
             if word_entity_similarity >= acceptance_threshold:
                 nn = totalp/(float(counter))
                 nt = totale/(float(counter))
-                return round(now2-now), counter, round(nn, 2), round(nt, 2), path
+                return round(now2-now), counter, round(nn, 2), round(nt, 2), paths
             
         nn = totalp/(float(depth))
         nt = totale/(float(depth))
-        return round(now2-now), depth, round(nn, 2), round(nt, 2), path
+        return round(now2-now), depth, round(nn, 2), round(nt, 2), paths
     except URLError as ue:
         emit('response', {{"status": ue.errno, "error": ue.__str__()}})
         return round(time()-now), 0, 0, 0, []
@@ -248,7 +253,7 @@ def llm(model, entity1: str, entity2: str, acceptance_threshold: float=1.0):
         
         emit('response', f"Similarity between {entity1} and {entity2}: {word_entity_sim}")
         if word_entity_sim >= acceptance_threshold:
-            return round(time()-now), 1, round(word_entity_sim, 2), round(word_entity_sim, 2), [(entity1, "", entity2)]
+            return round(time()-now), 1, round(word_entity_sim, 2), round(word_entity_sim, 2), [(entity1, "reached", entity2)]
         
         counter = 1
         depth,path = find_path_between_nodes_emb_wiki(entity1, entity2, model, llm=True)#, resource_type=ResourceType.WIKIDATA, agent=True, emb=True)

@@ -7,6 +7,7 @@ from SPARQLWrapper import JSON, SPARQLWrapper
 from flask_socketio import emit
 from numpy import array, dot, mean, zeros
 from numpy.linalg import norm
+from requests import get
 from white_rabbit.utils.constants import AGENT, BASE_URLS, SBERT_MODEL, WIKI2VEC_MODEL, WIKIDATA_URL
 from sklearn.metrics.pairwise import cosine_similarity
 from white_rabbit.utils.enums import EmbeddingType, ResourceType
@@ -168,27 +169,46 @@ def get_entity_label(entity_id: str, agent: bool=False, resource_type: ResourceT
     
     return None
 
-def get_property_label(property: str, agent: bool=False, resource_type: ResourceType=ResourceType.DBPEDIA):
-    sparql = SPARQLWrapper(BASE_URLS[resource_type], agent=AGENT) if agent else SPARQLWrapper(BASE_URLS[resource_type])
+# def get_property_label(property: str, agent: bool=False, resource_type: ResourceType=ResourceType.DBPEDIA):
+#     sparql = SPARQLWrapper(BASE_URLS[resource_type], agent=AGENT) if agent else SPARQLWrapper(BASE_URLS[resource_type])
 
     
-    query = f"""
-    SELECT ?property ?propertyLabel WHERE {{
-      BIND(<{property}> AS ?property)
-      SERVICE wikibase:label {{ bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }}
-    }}
-    """
+#     query = f"""
+#     SELECT ?property ?propertyLabel WHERE {{
+#       BIND(<{property}> AS ?property)
+#       SERVICE wikibase:label {{ bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }}
+#     }}
+#     """
     
-    sparql.setQuery(query)
-    sparql.setReturnFormat(JSON)
-    results = sparql.query().convert()
+#     sparql.setQuery(query)
+#     sparql.setReturnFormat(JSON)
+#     results = sparql.query().convert()
     
-    # Extract label from the results
-    if results["results"]["bindings"]:
-        label = results["results"]["bindings"][0]["propertyLabel"]["value"]
+#     # Extract label from the results
+#     if results["results"]["bindings"]:
+#         label = results["results"]["bindings"][0]["propertyLabel"]["value"]
+#         return label
+    
+#     return None
+
+def get_property_label(property_id: str):
+    url = 'https://www.wikidata.org/w/api.php'
+    params = {
+        'action': 'wbgetentities',
+        'ids': property_id,
+        'format': 'json',
+        'languages': 'en',
+        'props': 'labels'
+    }
+
+    response = get(url, params=params)
+    data = response.json()
+
+    try:
+        label = data['entities'][property_id]['labels']['en']['value']
         return label
-    
-    return None
+    except KeyError:
+        return property_id
 
 def get_entity_similarity(entity1: str, entity2: str, model, embedding_type: EmbeddingType=EmbeddingType.WIKI2VEC):
     """
