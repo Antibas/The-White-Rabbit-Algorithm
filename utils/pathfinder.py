@@ -61,7 +61,7 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, mo
             it=it+1
             lis.append(c[0]+" "+str(c[1]))
         current_node, path = queue.pop(0)
-        # emit("response", str(path), broadcast=True)
+        emit("response", {"current_path": path}, broadcast=True)#str(path).replace("(", "[").replace(")", "]"), broadcast=True)
         
         result2 = current_node[0].split("resource/")[-1]
      
@@ -158,7 +158,7 @@ def find_path_between_nodes(start_node: str, target_node: str, endpoint: str, mo
                     last_part2=last_part.replace("_"," ")
                     word_entity_sim = get_entity_similarity(si1, last_part2, model, embedding_type=embedding_type)
 
-                    emit('response', f"Similarity between {si1} and {last_part2}: {word_entity_sim}")
+                    # emit('response', f"Similarity between {si1} and {last_part2}: {word_entity_sim}")
                     if word_entity_sim is not None:
                         oka=oka+prf+last_part+","+str(word_entity_sim)+"#"
                         lss=[prf+last_part,float(word_entity_sim)]
@@ -400,7 +400,7 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
                     last_part=l
                     last_part2=dicta22[l]
                     word_entity_sim = get_entity_similarity(si1, last_part2, model, embedding_type=embedding_type)
-                    emit('response', f"Similarity between {si1} and {last_part2}: {word_entity_sim}")
+                    # emit('response', f"Similarity between {si1} and {last_part2}: {word_entity_sim}")
                     if word_entity_sim is not None:
                         oka=oka+prf+last_part+","+str(word_entity_sim)+"#"
                         lss=[prf+last_part,float(word_entity_sim)]

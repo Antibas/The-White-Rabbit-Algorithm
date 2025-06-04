@@ -15,7 +15,7 @@ def white_rabbit(model, entity1: str, entity2: str, acceptance_threshold: float=
         entity2=entity2.replace("_", " ")
 
         word_entity_sim = get_entity_similarity(entity1, entity2, model)
-        emit('response', f"Similarity between {entity1} and {entity2}: {word_entity_sim}")
+        # emit('response', f"Similarity between {entity1} and {entity2}: {word_entity_sim}")
         if word_entity_sim >= acceptance_threshold:
             return round(time()-now), 1, round(word_entity_sim, 2), round(word_entity_sim, 2), [[[entity1, str(word_entity_sim)], "reached", [entity2, str(word_entity_sim)]]]
         
@@ -50,7 +50,7 @@ def white_rabbit(model, entity1: str, entity2: str, acceptance_threshold: float=
 
             pa=get_property_label(triple[1].rsplit('/', 1)[-1]).replace("_"," ").replace("-"," ")
             paths.append([[xa0, str(word_entity_similarity)], pa, [xa2, str(word_entity_similarity2)]])
-            emit('response', f"Similarity between {xa0} and {xa2}: {word_entity_similarity} {word_entity_similarity2} ")
+            # emit('response', f"Similarity between {xa0} and {xa2}: {word_entity_similarity} {word_entity_similarity2} ")
             ida=ida+1
             if ida==lana:
                 break
@@ -133,7 +133,7 @@ def query_expansion(model, entity1: str, entity2: str, acceptance_threshold: flo
         totalp+= word_entity_similarity
         
         paths.append([[xa0, str(word_entity_similarity)], pa, [xa1, str(word_entity_similarity)]])
-        emit('response', f"Similarity between {xa0} and {xa1}: {word_entity_similarity}")
+        # emit('response', f"Similarity between {xa0} and {xa1}: {word_entity_similarity}")
         if word_entity_similarity >= acceptance_threshold:
             return round(now2-now), depth, round(totalp, 2), round(totale, 2), paths
         
@@ -149,7 +149,7 @@ def query_expansion(model, entity1: str, entity2: str, acceptance_threshold: flo
             xa2=get_entity_label(entity2, agent=True, resource_type=ResourceType.WIKIDATA).replace("_"," ").replace("-"," ")
             word_entity_similarity2 = get_entity_similarity(xa0, xa2, model)
             totale+= word_entity_similarity2
-            emit('response', f"Similarity between {xa0} and {xa1}: {word_entity_similarity}")
+            # emit('response', f"Similarity between {xa0} and {xa1}: {word_entity_similarity}")
             
             counter += 1
             paths.append(triple)
@@ -170,7 +170,7 @@ def query_expansion(model, entity1: str, entity2: str, acceptance_threshold: flo
         word_entity_similarity2 = get_entity_similarity(xa3, xa4, model)
         totale+= word_entity_similarity2
         paths.append([[xa3, str(word_entity_similarity)], pa, [xa4, str(word_entity_similarity2)]])
-        emit('response', f"Similarity between {xa3} and {xa4}: {word_entity_similarity} {word_entity_similarity2}")
+        # emit('response', f"Similarity between {xa3} and {xa4}: {word_entity_similarity} {word_entity_similarity2}")
         nn = totalp/(float(depth))
         nt = totale/(float(depth))
         return round(now2-now), depth, round(nn, 2), round(nt, 2), paths
@@ -188,7 +188,7 @@ def embedding(model, entity1: str, entity2: str, embedding_type: EmbeddingType, 
         entity2=entity2.replace("_", " ")
 
         word_entity_sim = get_entity_similarity(entity1, entity2, model, embedding_type)
-        emit('response', f"Similarity between {entity1} and {entity2}: {word_entity_sim}")
+        # emit('response', f"Similarity between {entity1} and {entity2}: {word_entity_sim}")
         if word_entity_sim >= acceptance_threshold:
             print('no counter')
             return round(time()-now), 1, round(word_entity_sim, 2), round(word_entity_sim, 2), [[[entity1, str(word_entity_sim)], "reached", [entity2, str(word_entity_sim)]]]
@@ -223,7 +223,7 @@ def embedding(model, entity1: str, entity2: str, embedding_type: EmbeddingType, 
             totale+= word_entity_similarity2
             pa=get_property_label(triple[1].rsplit('/', 1)[-1]).replace("_"," ").replace("-"," ")
             paths.append([[xa0, str(word_entity_similarity)], pa, [xa2, str(word_entity_similarity2)]])
-            emit('response', f"Similarity between {xa0} and {xa2}: {word_entity_similarity} {word_entity_similarity2} ")
+            # emit('response', f"Similarity between {xa0} and {xa2}: {word_entity_similarity} {word_entity_similarity2} ")
             ida=ida+1
             if ida==lana:
                 break
@@ -251,7 +251,7 @@ def llm(model, entity1: str, entity2: str, acceptance_threshold: float=1.0):
         entity2=entity2.replace("_", " ")
         word_entity_sim = get_entity_similarity(entity1, entity2, model)
         
-        emit('response', f"Similarity between {entity1} and {entity2}: {word_entity_sim}")
+        # emit('response', f"Similarity between {entity1} and {entity2}: {word_entity_sim}")
         if word_entity_sim >= acceptance_threshold:
             return round(time()-now), 1, round(word_entity_sim, 2), round(word_entity_sim, 2), [(entity1, "reached", entity2)]
         
@@ -282,7 +282,7 @@ def llm(model, entity1: str, entity2: str, acceptance_threshold: float=1.0):
         
             word_entity_similarity2 = get_entity_similarity(xa0, xa3, model)
             totale+= word_entity_similarity2
-            emit('response', f"Similarity between {xa0} and {xa2}: {word_entity_similarity} {word_entity_similarity2} ")
+            # emit('response', f"Similarity between {xa0} and {xa2}: {word_entity_similarity} {word_entity_similarity2} ")
             ida=ida+1
             if ida==lana:
                 break
