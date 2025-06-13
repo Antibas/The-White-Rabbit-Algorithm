@@ -283,6 +283,7 @@ def find_path_between_nodes_emb_wiki(start_node_raw: str, target_node_raw: str, 
             it=it+1
             lis.append(c[0]+" "+str(c[1]))
         current_node, path = queue.pop(0)
+        emit("response", {"current_path": path}, broadcast=True)
         
         result2 = current_node[0].split("resource/")[-1]
      
